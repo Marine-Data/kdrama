@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 드라마 일지 — Mon carnet de k-dramas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700;800&display=swap');
+
+  :root {
+    --ink: #211c1a;
+    --ink-soft: #5b5450;
+    --ink-faint: #8a8178;
+    --paper: #faf6ef;
+    --paper-raised: #ffffff;
+    --paper-sunken: #f1eadd;
+    --line: #e6ddd0;
+    --seal: #a8392f;
+    --seal-soft: #f1ded9;
+    --celadon: #7c9384;
+    --celadon-soft: #e7eee9;
+    --gold: #bb8f3f;
+    --gold-soft: #f3e9d3;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 18px 80px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 44px 18px 28px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 50% 0%, var(--seal-soft) 0%, transparent 60%),
+      var(--paper);
+  }
+  .hero-seal {
+    width: 76px; height: 76px; margin: 0 auto 18px; position: relative;
+    color: var(--seal);
+  }
+  .hero-seal svg circle { fill: none; stroke: currentColor; }
+  .hero-seal .c1 { stroke-width: 1.6; }
+  .hero-seal .c2 { stroke-width: 1; }
+  .hero-eyebrow {
+    font-family: 'Noto Serif KR', serif; font-size: 13px; letter-spacing: 0.06em;
+    color: var(--seal); margin: 0 0 6px; text-transform: none;
+  }
+  .hero h1 {
+    font-family: 'Noto Serif KR', Georgia, serif; font-size: 30px; font-weight: 700;
+    margin: 0 0 10px; letter-spacing: -0.01em; line-height: 1.25;
+  }
+  .hero p.sub {
+    font-size: 14.5px; color: var(--ink-soft); max-width: 460px; margin: 0 auto;
+    line-height: 1.55;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 28px; margin-top: 26px; flex-wrap: wrap;
+  }
+  .hero-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .hero-stat .num {
+    font-family: 'Noto Serif KR', serif; font-size: 26px; font-weight: 700; color: var(--ink);
+  }
+  .hero-stat .lbl {
+    font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* ---------- Nav ---------- */
+  .tabnav {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(250, 246, 239, 0.94); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    display: flex; overflow-x: auto; gap: 4px; padding: 10px 12px;
+    scrollbar-width: none;
+  }
+  .tabnav::-webkit-scrollbar { display: none; }
+  .tabnav button {
+    flex-shrink: 0; border: 1px solid transparent; background: transparent;
+    padding: 8px 14px; border-radius: 20px; font-size: 13px; color: var(--ink-soft);
+    cursor: pointer; font-weight: 500; white-space: nowrap;
+  }
+  .tabnav button.active { background: var(--ink); color: var(--paper); }
+  .tabnav button:hover:not(.active) { background: var(--paper-sunken); }
+
+  /* ---------- Sections ---------- */
+  section.panel { display: none; padding-top: 28px; }
+  section.panel.active { display: block; animation: fade-in 0.25s ease; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; margin: 0 0 4px;
+  }
+  .section-note {
+    font-size: 13px; color: var(--ink-faint); margin: 0 0 20px; line-height: 1.5;
+  }
+
+  .card {
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px; margin-bottom: 14px;
+  }
+
+  /* ---------- Reliability badge ---------- */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px;
+    padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .badge.b1 { background: #f1e6e0; color: #9a6a52; }
+  .badge.b2 { background: var(--gold-soft); color: #8c6b2c; }
+  .badge.b3 { background: var(--celadon-soft); color: #4f6657; }
+
+  /* ---------- Records grid ---------- */
+  .records-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px;
+  }
+  .record-card {
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px;
+  }
+  .record-card .rk-label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  .record-card .rk-title {
+    font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 600; line-height: 1.3; margin: 0 0 2px;
+  }
+  .record-card .rk-meta { font-size: 12px; color: var(--seal); font-weight: 600; }
+
+  /* ---------- Distribution chart ---------- */
+  .dist-chart {
+    display: flex; align-items: flex-end; gap: 6px; height: 140px; padding: 0 4px;
+    margin: 18px 0 6px;
+  }
+  .dist-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; }
+  .dist-bar {
+    width: 100%; max-width: 30px; border-radius: 5px 5px 2px 2px;
+    background: var(--celadon); transition: height 0.4s ease;
+  }
+  .dist-bar.warm { background: var(--seal); }
+  .dist-bar-num { font-size: 11px; color: var(--ink-faint); font-weight: 600; }
+  .dist-bar-lbl { font-size: 11px; color: var(--ink-soft); }
+
+  /* ---------- Person rows (rankings) ---------- */
+  .role-toggle { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .role-toggle button {
+    border: 1px solid var(--line); background: var(--paper-raised); border-radius: 20px;
+    padding: 7px 13px; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; font-weight: 500;
+  }
+  .role-toggle button.active { background: var(--seal); color: #fff; border-color: var(--seal); }
+
+  .sort-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+  .sort-toggle button {
+    flex: 1; border: 1px solid var(--line); background: var(--paper-raised); border-radius: 10px;
+    padding: 9px; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; font-weight: 500;
+  }
+  .sort-toggle button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .person-row {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px;
+    margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .person-row:hover { border-color: var(--seal); }
+  .person-rank {
+    font-family: 'Noto Serif KR', serif; font-size: 13px; color: var(--ink-faint);
+    width: 22px; flex-shrink: 0; text-align: center;
+  }
+  .person-info { flex: 1; min-width: 0; }
+  .person-name { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+  .person-sub { font-size: 11.5px; color: var(--ink-faint); }
+  .person-score {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0;
+  }
+  .person-score .v { font-family: 'Noto Serif KR', serif; font-weight: 700; font-size: 16px; color: var(--seal); }
+  .person-score .v.count { color: var(--celadon); }
+
+  /* ---------- Year chart ---------- */
+  .year-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; margin: 18px 0 8px; overflow-x: auto; padding: 0 2px 4px; }
+  .year-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; min-width: 30px; flex-shrink: 0; }
+  .year-bar { width: 20px; border-radius: 4px 4px 2px 2px; background: var(--gold); position: relative; }
+  .year-bar-note { font-size: 10px; font-weight: 700; color: var(--ink); }
+  .year-bar-lbl { font-size: 9.5px; color: var(--ink-faint); }
+  .scroll-hint { text-align: right; font-size: 10.5px; color: var(--ink-faint); margin-top: 4px; }
+
+  .insight-box {
+    background: var(--celadon-soft); border: 1px solid #c9d8cd; border-radius: 14px;
+    padding: 14px 16px; font-size: 13px; line-height: 1.6; margin: 16px 0;
+  }
+  .insight-box b { color: var(--ink); }
+  .insight-box.warn { background: var(--gold-soft); border-color: #e3cf9f; }
+
+  /* ---------- Collab search ---------- */
+  .search-box {
+    display: flex; align-items: center; gap: 8px; background: var(--paper-raised);
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 16px;
+  }
+  .search-box input {
+    border: none; outline: none; background: transparent; font-size: 14px; flex: 1;
+    color: var(--ink); font-family: inherit;
+  }
+  .collab-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 14px; background: var(--paper-raised); border: 1px solid var(--line);
+    border-radius: 12px; margin-bottom: 8px; font-size: 13px;
+  }
+  .collab-people { flex: 1; min-width: 0; }
+  .collab-people .p { font-weight: 600; }
+  .collab-people .x { color: var(--ink-faint); margin: 0 4px; font-size: 11px; }
+  .collab-people .titles-list { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; }
+  .collab-note { font-family: 'Noto Serif KR', serif; font-weight: 700; color: var(--seal); flex-shrink: 0; }
+
+  .highlight-collab {
+    background: linear-gradient(135deg, var(--seal-soft), var(--gold-soft));
+    border: 1px solid var(--seal); border-radius: 16px; padding: 18px; margin-bottom: 20px;
+  }
+  .highlight-collab .hc-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--seal);
+    font-weight: 700; margin-bottom: 8px;
+  }
+  .highlight-collab .hc-names { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .highlight-collab .hc-detail { font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+
+  /* ---------- Person detail modal ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(33,28,26,0.5); z-index: 100;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-sheet {
+    background: var(--paper); width: 100%; max-width: 480px; max-height: 86vh;
+    border-radius: 20px 20px 0 0; overflow-y: auto; animation: sheet-up 0.2s ease-out;
+    padding-bottom: 24px;
+  }
+  @keyframes sheet-up { from { transform: translateY(20px); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } }
+  .modal-handle { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 10px auto 14px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 0 20px 14px; }
+  .modal-header h3 { font-family: 'Noto Serif KR', serif; font-size: 19px; margin: 0 0 4px; }
+  .modal-header .role-tag { font-size: 12px; color: var(--seal); font-weight: 600; }
+  .modal-close { border: 1px solid var(--line); background: var(--paper-raised); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--ink-soft); flex-shrink: 0; }
+  .modal-body { padding: 0 20px; }
+  .modal-stat-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .modal-stat { flex: 1; background: var(--paper-sunken); border-radius: 12px; padding: 12px; text-align: center; }
+  .modal-stat .v { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; }
+  .modal-stat .l { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; }
+  .modal-section-h { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); margin: 18px 0 10px; }
+  .modal-title-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .modal-title-row:last-child { border-bottom: none; }
+  .modal-title-row .note { font-weight: 700; color: var(--seal); font-family: 'Noto Serif KR', serif; }
+  .collab-link-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 9px 0;
+    border-bottom: 1px solid var(--line); font-size: 13px; cursor: pointer;
+  }
+  .collab-link-row:last-child { border-bottom: none; }
+  .collab-link-row .cn { font-weight: 500; }
+  .collab-link-row .cr { font-size: 11px; color: var(--ink-faint); }
+
+  .empty-msg { text-align: center; padding: 30px 16px; color: var(--ink-faint); font-size: 13px; }
+
+  footer.foot {
+    text-align: center; padding: 30px 18px; font-size: 12px; color: var(--ink-faint);
+    border-top: 1px solid var(--line); margin-top: 30px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-seal">
+    <svg viewBox="0 0 76 76" width="76" height="76">
+      <circle class="c1" cx="38" cy="38" r="34"></circle>
+      <circle class="c2" cx="38" cy="38" r="27"></circle>
+    </svg>
+  </div>
+  <p class="hero-eyebrow">내 드라마 일지</p>
+  <h1>Tendances de mon carnet<br>de k-dramas</h1>
+  <p class="sub">44 titres vus, recoupés sous toutes leurs coutures — qui revient, qui marque, qui varie. Une carte de lecture, pas un palmarès figé.</p>
+  <div class="hero-stats" id="heroStats"></div>
+</header>
+
+<nav class="tabnav" id="tabnav">
+  <button data-tab="overview" class="active">Vue d'ensemble</button>
+  <button data-tab="people">Classements</button>
+  <button data-tab="collabs">Collaborations</button>
+  <button data-tab="variance">Régularité</button>
+  <button data-tab="time">Dans le temps</button>
+  <button data-tab="format">Formats</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section class="panel active" id="panel-overview">
+    <h2 class="section-title">Les extrêmes</h2>
+    <p class="section-note">Ce que ta liste contient de plus marquant, en valeur absolue.</p>
+    <div class="records-grid" id="recordsGrid"></div>
+
+    <h2 class="section-title">Comment tu notes</h2>
+    <p class="section-note">Répartition de toutes tes notes sur 10. Une moyenne ne dit rien sur sa propre forme.</p>
+    <div class="card">
+      <div class="dist-chart" id="distChart"></div>
+    </div>
+    <div class="insight-box" id="profileInsight"></div>
+  </section>
+
+  <!-- ===================== PEOPLE ===================== -->
+  <section class="panel" id="panel-people">
+    <h2 class="section-title">Qui revient, qui marque</h2>
+    <p class="section-note">Le nombre de titres et la note moyenne racontent deux choses différentes — une personne vue une seule fois peut avoir une note parfaite sans que ce soit une tendance. Touche un nom pour voir sa fiche complète.</p>
+    <div class="role-toggle" id="roleToggle">
+      <button data-role="acteur" class="active">Acteurs</button>
+      <button data-role="actrice">Actrices</button>
+      <button data-role="scenariste">Scénaristes</button>
+      <button data-role="realisateur">Réalisateurs</button>
+    </div>
+    <div class="sort-toggle" id="sortToggle">
+      <button data-sort="count" class="active">Plus vus</button>
+      <button data-sort="note">Mieux notés</button>
+    </div>
+    <div id="peopleList"></div>
+  </section>
+
+  <!-- ===================== COLLABS ===================== -->
+  <section class="panel" id="panel-collabs">
+    <h2 class="section-title">Carte des collaborations</h2>
+    <p class="section-note">Toutes les paires de personnes ayant travaillé ensemble sur un titre que tu as vu — un inventaire, pas un classement. La grande majorité ne se sont croisées qu'une fois ; c'est normal sur 44 titres et près de 150 personnes différentes.</p>
+
+    <div class="highlight-collab" id="highlightCollab"></div>
+
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="collabSearch" placeholder="Chercher un nom (ex. Park Seo-joon)…">
+    </div>
+    <div id="collabList"></div>
+  </section>
+
+  <!-- ===================== VARIANCE ===================== -->
+  <section class="panel" id="panel-variance">
+    <h2 class="section-title">Réguliers vs imprévisibles</h2>
+    <p class="section-note">Pour les scénaristes, réalisateurs, acteurs et actrices vus au moins deux fois : est-ce que tu les notes toujours pareil, ou est-ce que ça dépend totalement du projet ? Calculé sur l'écart entre leurs notes chez toi.</p>
+    <div id="varianceList"></div>
+  </section>
+
+  <!-- ===================== TIME ===================== -->
+  <section class="panel" id="panel-time">
+    <h2 class="section-title">Année par année</h2>
+    <p class="section-note">Note moyenne et volume vu, classés par année de sortie du drama (pas par date où tu l'as regardé).</p>
+    <div class="card" style="position:relative;">
+      <div class="year-chart" id="yearChart"></div>
+      <div class="scroll-hint">faire glisser →</div>
+    </div>
+    <div class="insight-box" id="yearInsight"></div>
+  </section>
+
+  <!-- ===================== FORMAT ===================== -->
+  <section class="panel" id="panel-format">
+    <h2 class="section-title">Formats</h2>
+    <p class="section-note">Est-ce que la longueur d'un drama influence ta note ?</p>
+    <div id="formatCards"></div>
+  </section>
+
+</div>
+
+<footer class="foot">Carnet personnel — données figées au moment du partage.</footer>
+
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <h3 id="modalName"></h3>
+        <div class="role-tag" id="modalRole"></div>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {"titles": [{"idx": 0, "titre": "The 1st Shop of Coffee Prince", "titre_kr": "커피프린스 1호점", "annee": 2007, "note": 7.0, "episodes": 17, "duree": 60, "people": [["Gong Yoo", "acteur"], ["Yoon Eun-hye", "actrice"], ["Lee Jung-ah", "scenariste"], ["Jang Hyun-joo", "scenariste"], ["Lee Yoon-jung", "realisateur"]]}, {"idx": 1, "titre": "Reply 1988", "titre_kr": "응답하라 1988", "annee": 2015, "note": 4.0, "episodes": null, "duree": null, "people": [["Park Bo-gum", "acteur"], ["Hyeri", "actrice"], ["Ra Mi-ran", "actrice"], ["Lee Woo-jung", "scenariste"], ["Shin Won-ho", "realisateur"]]}, {"idx": 2, "titre": "Descendants of the Sun", "titre_kr": "태양의 후예", "annee": 2016, "note": 4.0, "episodes": 16, "duree": 60, "people": [["Song Joong-ki", "acteur"], ["Song Hye-kyo", "actrice"], ["Kim Eun-sook", "scenariste"], ["Kim Won-seok", "scenariste"], ["Lee Eung-bok", "realisateur"], ["Baek Sang-hoon", "realisateur"]]}, {"idx": 3, "titre": "Strong Girl Bong-soon", "titre_kr": "힘쎈여자 도봉순", "annee": 2017, "note": 7.0, "episodes": 16, "duree": 65, "people": [["Park Hyung-sik", "acteur"], ["Park Bo-young", "actrice"], ["Baek Mi-kyeong", "scenariste"], ["Lee Hyung-min", "realisateur"]]}, {"idx": 4, "titre": "Fight for My Way", "titre_kr": "쌈 마이웨이", "annee": 2017, "note": 10.0, "episodes": 16, "duree": 60, "people": [["Park Seo-joon", "acteur"], ["Kim Ji-won", "actrice"], ["Im Sang-choon", "scenariste"], ["Lee Na-jeong", "realisateur"]]}, {"idx": 5, "titre": "Because This Is My First Life", "titre_kr": "이번 생은 처음이라", "annee": 2017, "note": 6.0, "episodes": 16, "duree": 60, "people": [["Lee Min-ki", "acteur"], ["Jung So-min", "actrice"], ["Yoon Nan-joong", "scenariste"], ["Park Joon-hwa", "realisateur"]]}, {"idx": 6, "titre": "Suspicious Partner", "titre_kr": "수상한 파트너", "annee": 2017, "note": 7.0, "episodes": 40, "duree": 35, "people": [["Ji Chang-wook", "acteur"], ["Nam Ji-hyun", "actrice"], ["Kwon Ki-young", "scenariste"], ["Park Sun-ho", "realisateur"]]}, {"idx": 7, "titre": "What's Wrong with Secretary Kim", "titre_kr": "김비서가 왜 그럴까", "annee": 2018, "note": 7.0, "episodes": 16, "duree": 65, "people": [["Park Seo-joon", "acteur"], ["Park Min-young", "actrice"], ["Jung Eun-young", "scenariste"], ["Park Joon-hwa", "realisateur"]]}, {"idx": 8, "titre": "Clean With Passion for Now", "titre_kr": "일단 뜨겁게 청소하라", "annee": 2018, "note": 6.0, "episodes": 16, "duree": 60, "people": [["Yoon Kyun-sang", "acteur"], ["Kim Yoo-jung", "actrice"], ["Han Hee-jung", "scenariste"], ["No Jong-chan", "realisateur"]]}, {"idx": 9, "titre": "100 days my prince", "titre_kr": "백일의 낭군님", "annee": 2018, "note": 5.0, "episodes": 16, "duree": 75, "people": [["Kim Seon-ho", "acteur"], ["No Ji-sul", "scenariste"], ["Lee Jong-jae", "realisateur"], ["Nam Sung-woo", "realisateur"]]}, {"idx": 10, "titre": "Her Private Life", "titre_kr": "그녀의 사생활", "annee": 2019, "note": 6.0, "episodes": 16, "duree": 60, "people": [["Kim Jae-wook", "acteur"], ["Park Min-young", "actrice"], ["Kim Hye-young", "scenariste"], ["Hong Jong-chan", "realisateur"]]}, {"idx": 11, "titre": "Crash Landing on You", "titre_kr": "사랑의 불시착", "annee": 2019, "note": 10.0, "episodes": 16, "duree": 70, "people": [["Hyun Bin", "acteur"], ["Son Ye-jin", "actrice"], ["Park Ji-eun", "scenariste"], ["Lee Jung-hyo", "realisateur"]]}, {"idx": 12, "titre": "Backstreet Rookie", "titre_kr": "편의점 샛별이", "annee": 2020, "note": 10.0, "episodes": 16, "duree": 60, "people": [["Ji Chang-wook", "acteur"], ["Kim Yoo-jung", "actrice"], ["Son Geun-joo", "scenariste"], ["Lee Myung-woo", "realisateur"]]}, {"idx": 13, "titre": "True Beauty", "titre_kr": "여신강림", "annee": 2020, "note": 10.0, "episodes": 16, "duree": 60, "people": [["Cha Eun-woo", "acteur"], ["Moon Ga-young", "actrice"], ["Lee Si-eun", "scenariste"], ["Kim Sang-hyeop", "realisateur"]]}, {"idx": 14, "titre": "Itaewon Class", "titre_kr": "이태원 클라쓰", "annee": 2020, "note": 9.0, "episodes": 16, "duree": 70, "people": [["Park Seo-joon", "acteur"], ["Kim Da-mi", "actrice"], ["Jo Gwang-jin", "scenariste"], ["Kim Sung-yoon", "realisateur"]]}, {"idx": 15, "titre": "Record of Youth", "titre_kr": "청춘기록", "annee": 2020, "note": 5.0, "episodes": 16, "duree": 70, "people": [["Park Bo-gum", "acteur"], ["Park So-dam", "actrice"], ["Ha Myung-hee", "scenariste"], ["Ahn Gil-ho", "realisateur"]]}, {"idx": 16, "titre": "Lovestruck in the city", "titre_kr": "도시남녀의 사랑법", "annee": 2020, "note": 10.0, "episodes": 17, "duree": 30, "people": [["Ji Chang-wook", "acteur"], ["Kim Ji-won", "actrice"], ["Jung Hyun-jung", "scenariste"], ["Jung Da-yun", "scenariste"], ["Park Shin-woo", "realisateur"]]}, {"idx": 17, "titre": "Start-up", "titre_kr": "스타트업", "annee": 2020, "note": 4.0, "episodes": 16, "duree": 80, "people": [["Kim Seon-ho", "acteur"], ["Bae Suzy", "actrice"], ["Park Hye-ryun", "scenariste"], ["Oh Chung-hwan", "realisateur"]]}, {"idx": 18, "titre": "Vincenzo", "titre_kr": "빈센조", "annee": 2021, "note": 7.0, "episodes": 20, "duree": 75, "people": [["Song Joong-ki", "acteur"], ["Jeon Yeo-been", "actrice"], ["Park Jae-bum", "scenariste"], ["Kim Hee-won", "realisateur"]]}, {"idx": 19, "titre": "Hometown Cha-Cha-Cha", "titre_kr": "갯마을 차차차", "annee": 2021, "note": 10.0, "episodes": 16, "duree": 75, "people": [["Kim Seon-ho", "acteur"], ["Shin Min-a", "actrice"], ["Shin Ha-eun", "scenariste"], ["Yoo Je-won", "realisateur"]]}, {"idx": 20, "titre": "Doom at Your Service", "titre_kr": "어느 날 우리 집 현관으로 멸망이 들어왔다", "annee": 2021, "note": 3.0, "episodes": 16, "duree": 60, "people": [["Seo In-guk", "acteur"], ["Park Bo-young", "actrice"], ["Im Me-a-ri", "scenariste"], ["Kwon Young-il", "realisateur"]]}, {"idx": 21, "titre": "Taxi Driver", "titre_kr": "모범택시", "annee": 2021, "note": 5.0, "episodes": 16, "duree": 60, "people": [["Lee Je-hoon", "acteur"], ["Pyo Ye-jin", "actrice"], ["Oh Sang-ho", "scenariste"], ["Lee Ji-hyun", "scenariste"], ["Park Joon-woo", "realisateur"]]}, {"idx": 22, "titre": "My Liberation Notes", "titre_kr": "나의 해방일지", "annee": 2022, "note": 8.0, "episodes": 16, "duree": 70, "people": [["Son Suk-ku", "acteur"], ["Kim Ji-won", "actrice"], ["Park Hae-young", "scenariste"], ["Kim Seok-yoon", "realisateur"]]}, {"idx": 23, "titre": "The Glory", "titre_kr": "더 글로리", "annee": 2022, "note": 10.0, "episodes": 16, "duree": 60, "people": [["Lee Do-hyun", "acteur"], ["Song Hye-kyo", "actrice"], ["Kim Eun-sook", "scenariste"], ["Ahn Gil-ho", "realisateur"]]}, {"idx": 24, "titre": "Juvenile Justice", "titre_kr": "소년 심판", "annee": 2022, "note": 4.0, "episodes": 10, "duree": 60, "people": [["Kim Mu-yeol", "acteur"], ["Kim Hye-soo", "actrice"], ["Kim Min-seok", "scenariste"], ["Hong Jong-chan", "realisateur"]]}, {"idx": 25, "titre": "Café Minamdang", "titre_kr": "미남당", "annee": 2022, "note": 2.0, "episodes": 18, "duree": 70, "people": [["Seo In-guk", "acteur"], ["Oh Yeon-seo", "actrice"], ["Park Hye-jin", "scenariste"], ["Go Jae-hyun", "realisateur"]]}, {"idx": 26, "titre": "A Good Day to Be a Dog", "titre_kr": "오늘도 사랑스럽개", "annee": 2023, "note": 6.0, "episodes": 14, "duree": 45, "people": [["Cha Eun-woo", "acteur"], ["Park Gyu-young", "actrice"], ["Baek In-ah", "scenariste"], ["Kim Dae-woong", "realisateur"]]}, {"idx": 27, "titre": "Delivery Man", "titre_kr": "딜리버리맨", "annee": 2023, "note": 3.0, "episodes": 12, "duree": 60, "people": [["Yoon Chan-young", "acteur"], ["Bang Min-ah", "actrice"], ["Joo Hyo-jin", "scenariste"], ["Kang Sol", "realisateur"]]}, {"idx": 28, "titre": "Dream", "titre_kr": "드림", "annee": 2023, "note": 6.0, "episodes": 1, "duree": 125, "people": [["Park Seo-joon", "acteur"], ["IU (Lee Ji-eun)", "actrice"], ["Lee Byeong-heon", "scenariste"], ["Lee Byeong-heon", "realisateur"]]}, {"idx": 29, "titre": "Welcome to Samdal-ri", "titre_kr": "웰컴투 삼달리", "annee": 2023, "note": 9.0, "episodes": 16, "duree": 69, "people": [["Ji Chang-wook", "acteur"], ["Shin Hae-sun", "actrice"], ["Kwon Hye-joo", "scenariste"], ["Cha Young-hoon", "realisateur"]]}, {"idx": 30, "titre": "Crash course in romance", "titre_kr": "일타 스캔들", "annee": 2023, "note": 7.0, "episodes": 16, "duree": 70, "people": [["Jeong Kyeong-ho", "acteur"], ["Jeon Do-yeon", "actrice"], ["Yang Hee-seung", "scenariste"], ["Yoo Je-won", "realisateur"]]}, {"idx": 31, "titre": "Wonderland", "titre_kr": "원더랜드", "annee": 2024, "note": 8.0, "episodes": 1, "duree": 115, "people": [["Gong Yoo", "acteur"], ["Tang Wei / Bae Suzy", "actrice"], ["Kim Tae-yong", "scenariste"], ["Kim Tae-yong", "realisateur"]]}, {"idx": 32, "titre": "Officers Black Belt", "titre_kr": "오피서 블랙 벨트", "annee": 2024, "note": 6.0, "episodes": 1, "duree": 120, "people": [["Kim Woo-bin", "acteur"], ["Jason Kim", "scenariste"], ["Jason Kim", "realisateur"]]}, {"idx": 33, "titre": "Study Group", "titre_kr": "스터디 그룹", "annee": 2024, "note": 5.0, "episodes": 8, "duree": 50, "people": [["Hwang Min-hyun", "acteur"], ["Han Ji-won", "actrice"], ["Jang Ho-jin", "scenariste"], ["Lee Jang-hoon", "realisateur"]]}, {"idx": 34, "titre": "Queen of tears", "titre_kr": "눈물의 여왕", "annee": 2024, "note": 8.0, "episodes": 16, "duree": 75, "people": [["Kim Soo-hyun", "acteur"], ["Kim Ji-won", "actrice"], ["Park Ji-eun", "scenariste"], ["Kim Hee-won", "realisateur"], ["Jang Young-woo", "realisateur"]]}, {"idx": 35, "titre": "Lovely Runner", "titre_kr": "선재 업고 튀어", "annee": 2024, "note": 8.0, "episodes": 16, "duree": 70, "people": [["Byeon Woo-seok", "acteur"], ["Kim Hye-yoon", "actrice"], ["Lee Si-eun", "scenariste"], ["Yoon Jong-ho", "realisateur"]]}, {"idx": 36, "titre": "Life Gives You Tangerines", "titre_kr": "라이프 기브스 유 탄제린", "annee": 2025, "note": 10.0, "episodes": 12, "duree": 60, "people": [["Park Bo-gum", "acteur"], ["IU (Lee Ji-eun)", "actrice"], ["Im Sang-chun", "scenariste"], ["Kim Won-seok", "realisateur"]]}, {"idx": 37, "titre": "Our unwritten Seoul", "titre_kr": "미지의 서울", "annee": 2025, "note": 5.0, "episodes": 12, "duree": 70, "people": [["Park Jin-young", "acteur"], ["Park Bo-young", "actrice"], ["Lee Kang", "scenariste"], ["Park Shin-woo", "realisateur"]]}, {"idx": 38, "titre": "The winning try", "titre_kr": "트라이: 우리는 기적이 된다", "annee": 2025, "note": null, "episodes": 12, "duree": 70, "people": [["Yoon Kye-sang", "acteur"], ["Im Se-mi", "actrice"], ["Lim Jin-ah", "scenariste"], ["Jang Yeong-seok", "realisateur"]]}, {"idx": 39, "titre": "La Vie rêvée de M. Kim", "titre_kr": "서울 자가에 대기업 다니는 김 부장 이야기", "annee": 2025, "note": 10.0, "episodes": 12, "duree": 61, "people": [["Ryoo Seung-ryong", "acteur"], ["Myung Se-bin", "actrice"], ["Kim Hong-ki", "scenariste"], ["Yoon Hye-sung", "scenariste"], ["Jo Hyun-tak", "realisateur"]]}, {"idx": 40, "titre": "Boyfriend on Demand", "titre_kr": "월간남친", "annee": 2026, "note": 5.0, "episodes": 10, "duree": 60, "people": [["Seo In-guk", "acteur"], ["Jisoo", "actrice"], ["Namgung Do-young", "scenariste"], ["Kim Jung-sik", "realisateur"]]}, {"idx": 41, "titre": "Perfect Crown", "titre_kr": "21세기 대군부인", "annee": 2026, "note": 6.0, "episodes": 12, "duree": 72, "people": [["Byeon Woo-seok", "acteur"], ["IU", "actrice"], ["Yoo Ji-won", "scenariste"], ["Park Joon-hwa", "realisateur"], ["Bae Hee-young", "realisateur"]]}, {"idx": 42, "titre": "We are all trying here", "titre_kr": "모두가 자신의 무가치함과 싸우고 있다", "annee": 2026, "note": 7.0, "episodes": 12, "duree": 70, "people": [["Koo Kyo-hwan", "acteur"], ["Go Youn-jung", "actrice"], ["Park Hae-young", "scenariste"], ["Cha Young-hoon", "realisateur"]]}, {"idx": 43, "titre": "Can this love be translated ?", "titre_kr": "이 사랑 통역 되나요?", "annee": 2026, "note": 7.0, "episodes": 12, "duree": 65, "people": [["Kim Seon-ho", "acteur"], ["Go Youn-jung", "actrice"], ["Hong Jung-eun", "scenariste"], ["Hong Mi-ran", "scenariste"], ["Yoo Young-eun", "realisateur"]]}], "people_profiles": [{"name": "Gong Yoo", "role": "acteur", "count": 2, "avg_note": 7.5, "variance": 0.5, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0, "annee": 2007}, {"titre": "Wonderland", "note": 8.0, "annee": 2024}]}, {"name": "Yoon Eun-hye", "role": "actrice", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0, "annee": 2007}]}, {"name": "Lee Jung-ah", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0, "annee": 2007}]}, {"name": "Jang Hyun-joo", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0, "annee": 2007}]}, {"name": "Lee Yoon-jung", "role": "realisateur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0, "annee": 2007}]}, {"name": "Park Bo-gum", "role": "acteur", "count": 3, "avg_note": 6.33, "variance": 2.62, "titles": [{"titre": "Reply 1988", "note": 4.0, "annee": 2015}, {"titre": "Record of Youth", "note": 5.0, "annee": 2020}, {"titre": "Life Gives You Tangerines", "note": 10.0, "annee": 2025}]}, {"name": "Hyeri", "role": "actrice", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Reply 1988", "note": 4.0, "annee": 2015}]}, {"name": "Ra Mi-ran", "role": "actrice", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Reply 1988", "note": 4.0, "annee": 2015}]}, {"name": "Lee Woo-jung", "role": "scenariste", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Reply 1988", "note": 4.0, "annee": 2015}]}, {"name": "Shin Won-ho", "role": "realisateur", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Reply 1988", "note": 4.0, "annee": 2015}]}, {"name": "Song Joong-ki", "role": "acteur", "count": 2, "avg_note": 5.5, "variance": 1.5, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}, {"titre": "Vincenzo", "note": 7.0, "annee": 2021}]}, {"name": "Song Hye-kyo", "role": "actrice", "count": 2, "avg_note": 7.0, "variance": 3.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}, {"titre": "The Glory", "note": 10.0, "annee": 2022}]}, {"name": "Kim Eun-sook", "role": "scenariste", "count": 2, "avg_note": 7.0, "variance": 3.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}, {"titre": "The Glory", "note": 10.0, "annee": 2022}]}, {"name": "Kim Won-seok", "role": "scenariste", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}]}, {"name": "Lee Eung-bok", "role": "realisateur", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}]}, {"name": "Baek Sang-hoon", "role": "realisateur", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Descendants of the Sun", "note": 4.0, "annee": 2016}]}, {"name": "Park Hyung-sik", "role": "acteur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0, "annee": 2017}]}, {"name": "Park Bo-young", "role": "actrice", "count": 3, "avg_note": 5.0, "variance": 1.63, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0, "annee": 2017}, {"titre": "Doom at Your Service", "note": 3.0, "annee": 2021}, {"titre": "Our unwritten Seoul", "note": 5.0, "annee": 2025}]}, {"name": "Baek Mi-kyeong", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0, "annee": 2017}]}, {"name": "Lee Hyung-min", "role": "realisateur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0, "annee": 2017}]}, {"name": "Park Seo-joon", "role": "acteur", "count": 4, "avg_note": 8.0, "variance": 1.58, "titles": [{"titre": "Fight for My Way", "note": 10.0, "annee": 2017}, {"titre": "What's Wrong with Secretary Kim", "note": 7.0, "annee": 2018}, {"titre": "Itaewon Class", "note": 9.0, "annee": 2020}, {"titre": "Dream", "note": 6.0, "annee": 2023}]}, {"name": "Kim Ji-won", "role": "actrice", "count": 4, "avg_note": 9.0, "variance": 1.0, "titles": [{"titre": "Fight for My Way", "note": 10.0, "annee": 2017}, {"titre": "Lovestruck in the city", "note": 10.0, "annee": 2020}, {"titre": "My Liberation Notes", "note": 8.0, "annee": 2022}, {"titre": "Queen of tears", "note": 8.0, "annee": 2024}]}, {"name": "Im Sang-choon", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Fight for My Way", "note": 10.0, "annee": 2017}]}, {"name": "Lee Na-jeong", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Fight for My Way", "note": 10.0, "annee": 2017}]}, {"name": "Lee Min-ki", "role": "acteur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Because This Is My First Life", "note": 6.0, "annee": 2017}]}, {"name": "Jung So-min", "role": "actrice", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Because This Is My First Life", "note": 6.0, "annee": 2017}]}, {"name": "Yoon Nan-joong", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Because This Is My First Life", "note": 6.0, "annee": 2017}]}, {"name": "Park Joon-hwa", "role": "realisateur", "count": 3, "avg_note": 6.33, "variance": 0.47, "titles": [{"titre": "Because This Is My First Life", "note": 6.0, "annee": 2017}, {"titre": "What's Wrong with Secretary Kim", "note": 7.0, "annee": 2018}, {"titre": "Perfect Crown", "note": 6.0, "annee": 2026}]}, {"name": "Ji Chang-wook", "role": "acteur", "count": 4, "avg_note": 9.0, "variance": 1.22, "titles": [{"titre": "Suspicious Partner", "note": 7.0, "annee": 2017}, {"titre": "Backstreet Rookie", "note": 10.0, "annee": 2020}, {"titre": "Lovestruck in the city", "note": 10.0, "annee": 2020}, {"titre": "Welcome to Samdal-ri", "note": 9.0, "annee": 2023}]}, {"name": "Nam Ji-hyun", "role": "actrice", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Suspicious Partner", "note": 7.0, "annee": 2017}]}, {"name": "Kwon Ki-young", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Suspicious Partner", "note": 7.0, "annee": 2017}]}, {"name": "Park Sun-ho", "role": "realisateur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Suspicious Partner", "note": 7.0, "annee": 2017}]}, {"name": "Park Min-young", "role": "actrice", "count": 2, "avg_note": 6.5, "variance": 0.5, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0, "annee": 2018}, {"titre": "Her Private Life", "note": 6.0, "annee": 2019}]}, {"name": "Jung Eun-young", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0, "annee": 2018}]}, {"name": "Yoon Kyun-sang", "role": "acteur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0, "annee": 2018}]}, {"name": "Kim Yoo-jung", "role": "actrice", "count": 2, "avg_note": 8.0, "variance": 2.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0, "annee": 2018}, {"titre": "Backstreet Rookie", "note": 10.0, "annee": 2020}]}, {"name": "Han Hee-jung", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0, "annee": 2018}]}, {"name": "No Jong-chan", "role": "realisateur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0, "annee": 2018}]}, {"name": "Kim Seon-ho", "role": "acteur", "count": 4, "avg_note": 6.5, "variance": 2.29, "titles": [{"titre": "100 days my prince", "note": 5.0, "annee": 2018}, {"titre": "Start-up", "note": 4.0, "annee": 2020}, {"titre": "Hometown Cha-Cha-Cha", "note": 10.0, "annee": 2021}, {"titre": "Can this love be translated ?", "note": 7.0, "annee": 2026}]}, {"name": "No Ji-sul", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "100 days my prince", "note": 5.0, "annee": 2018}]}, {"name": "Lee Jong-jae", "role": "realisateur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "100 days my prince", "note": 5.0, "annee": 2018}]}, {"name": "Nam Sung-woo", "role": "realisateur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "100 days my prince", "note": 5.0, "annee": 2018}]}, {"name": "Kim Jae-wook", "role": "acteur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Her Private Life", "note": 6.0, "annee": 2019}]}, {"name": "Kim Hye-young", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Her Private Life", "note": 6.0, "annee": 2019}]}, {"name": "Hong Jong-chan", "role": "realisateur", "count": 2, "avg_note": 5.0, "variance": 1.0, "titles": [{"titre": "Her Private Life", "note": 6.0, "annee": 2019}, {"titre": "Juvenile Justice", "note": 4.0, "annee": 2022}]}, {"name": "Hyun Bin", "role": "acteur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Crash Landing on You", "note": 10.0, "annee": 2019}]}, {"name": "Son Ye-jin", "role": "actrice", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Crash Landing on You", "note": 10.0, "annee": 2019}]}, {"name": "Park Ji-eun", "role": "scenariste", "count": 2, "avg_note": 9.0, "variance": 1.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0, "annee": 2019}, {"titre": "Queen of tears", "note": 8.0, "annee": 2024}]}, {"name": "Lee Jung-hyo", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Crash Landing on You", "note": 10.0, "annee": 2019}]}, {"name": "Son Geun-joo", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Backstreet Rookie", "note": 10.0, "annee": 2020}]}, {"name": "Lee Myung-woo", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Backstreet Rookie", "note": 10.0, "annee": 2020}]}, {"name": "Cha Eun-woo", "role": "acteur", "count": 2, "avg_note": 8.0, "variance": 2.0, "titles": [{"titre": "True Beauty", "note": 10.0, "annee": 2020}, {"titre": "A Good Day to Be a Dog", "note": 6.0, "annee": 2023}]}, {"name": "Moon Ga-young", "role": "actrice", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "True Beauty", "note": 10.0, "annee": 2020}]}, {"name": "Lee Si-eun", "role": "scenariste", "count": 2, "avg_note": 9.0, "variance": 1.0, "titles": [{"titre": "True Beauty", "note": 10.0, "annee": 2020}, {"titre": "Lovely Runner", "note": 8.0, "annee": 2024}]}, {"name": "Kim Sang-hyeop", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "True Beauty", "note": 10.0, "annee": 2020}]}, {"name": "Kim Da-mi", "role": "actrice", "count": 1, "avg_note": 9.0, "variance": null, "titles": [{"titre": "Itaewon Class", "note": 9.0, "annee": 2020}]}, {"name": "Jo Gwang-jin", "role": "scenariste", "count": 1, "avg_note": 9.0, "variance": null, "titles": [{"titre": "Itaewon Class", "note": 9.0, "annee": 2020}]}, {"name": "Kim Sung-yoon", "role": "realisateur", "count": 1, "avg_note": 9.0, "variance": null, "titles": [{"titre": "Itaewon Class", "note": 9.0, "annee": 2020}]}, {"name": "Park So-dam", "role": "actrice", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Record of Youth", "note": 5.0, "annee": 2020}]}, {"name": "Ha Myung-hee", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Record of Youth", "note": 5.0, "annee": 2020}]}, {"name": "Ahn Gil-ho", "role": "realisateur", "count": 2, "avg_note": 7.5, "variance": 2.5, "titles": [{"titre": "Record of Youth", "note": 5.0, "annee": 2020}, {"titre": "The Glory", "note": 10.0, "annee": 2022}]}, {"name": "Jung Hyun-jung", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Lovestruck in the city", "note": 10.0, "annee": 2020}]}, {"name": "Jung Da-yun", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Lovestruck in the city", "note": 10.0, "annee": 2020}]}, {"name": "Park Shin-woo", "role": "realisateur", "count": 2, "avg_note": 7.5, "variance": 2.5, "titles": [{"titre": "Lovestruck in the city", "note": 10.0, "annee": 2020}, {"titre": "Our unwritten Seoul", "note": 5.0, "annee": 2025}]}, {"name": "Bae Suzy", "role": "actrice", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Start-up", "note": 4.0, "annee": 2020}]}, {"name": "Park Hye-ryun", "role": "scenariste", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Start-up", "note": 4.0, "annee": 2020}]}, {"name": "Oh Chung-hwan", "role": "realisateur", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Start-up", "note": 4.0, "annee": 2020}]}, {"name": "Jeon Yeo-been", "role": "actrice", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Vincenzo", "note": 7.0, "annee": 2021}]}, {"name": "Park Jae-bum", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Vincenzo", "note": 7.0, "annee": 2021}]}, {"name": "Kim Hee-won", "role": "realisateur", "count": 2, "avg_note": 7.5, "variance": 0.5, "titles": [{"titre": "Vincenzo", "note": 7.0, "annee": 2021}, {"titre": "Queen of tears", "note": 8.0, "annee": 2024}]}, {"name": "Shin Min-a", "role": "actrice", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0, "annee": 2021}]}, {"name": "Shin Ha-eun", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0, "annee": 2021}]}, {"name": "Yoo Je-won", "role": "realisateur", "count": 2, "avg_note": 8.5, "variance": 1.5, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0, "annee": 2021}, {"titre": "Crash course in romance", "note": 7.0, "annee": 2023}]}, {"name": "Seo In-guk", "role": "acteur", "count": 3, "avg_note": 3.33, "variance": 1.25, "titles": [{"titre": "Doom at Your Service", "note": 3.0, "annee": 2021}, {"titre": "Café Minamdang", "note": 2.0, "annee": 2022}, {"titre": "Boyfriend on Demand", "note": 5.0, "annee": 2026}]}, {"name": "Im Me-a-ri", "role": "scenariste", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Doom at Your Service", "note": 3.0, "annee": 2021}]}, {"name": "Kwon Young-il", "role": "realisateur", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Doom at Your Service", "note": 3.0, "annee": 2021}]}, {"name": "Lee Je-hoon", "role": "acteur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Taxi Driver", "note": 5.0, "annee": 2021}]}, {"name": "Pyo Ye-jin", "role": "actrice", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Taxi Driver", "note": 5.0, "annee": 2021}]}, {"name": "Oh Sang-ho", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Taxi Driver", "note": 5.0, "annee": 2021}]}, {"name": "Lee Ji-hyun", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Taxi Driver", "note": 5.0, "annee": 2021}]}, {"name": "Park Joon-woo", "role": "realisateur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Taxi Driver", "note": 5.0, "annee": 2021}]}, {"name": "Son Suk-ku", "role": "acteur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "My Liberation Notes", "note": 8.0, "annee": 2022}]}, {"name": "Park Hae-young", "role": "scenariste", "count": 2, "avg_note": 7.5, "variance": 0.5, "titles": [{"titre": "My Liberation Notes", "note": 8.0, "annee": 2022}, {"titre": "We are all trying here", "note": 7.0, "annee": 2026}]}, {"name": "Kim Seok-yoon", "role": "realisateur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "My Liberation Notes", "note": 8.0, "annee": 2022}]}, {"name": "Lee Do-hyun", "role": "acteur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "The Glory", "note": 10.0, "annee": 2022}]}, {"name": "Kim Mu-yeol", "role": "acteur", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Juvenile Justice", "note": 4.0, "annee": 2022}]}, {"name": "Kim Hye-soo", "role": "actrice", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Juvenile Justice", "note": 4.0, "annee": 2022}]}, {"name": "Kim Min-seok", "role": "scenariste", "count": 1, "avg_note": 4.0, "variance": null, "titles": [{"titre": "Juvenile Justice", "note": 4.0, "annee": 2022}]}, {"name": "Oh Yeon-seo", "role": "actrice", "count": 1, "avg_note": 2.0, "variance": null, "titles": [{"titre": "Café Minamdang", "note": 2.0, "annee": 2022}]}, {"name": "Park Hye-jin", "role": "scenariste", "count": 1, "avg_note": 2.0, "variance": null, "titles": [{"titre": "Café Minamdang", "note": 2.0, "annee": 2022}]}, {"name": "Go Jae-hyun", "role": "realisateur", "count": 1, "avg_note": 2.0, "variance": null, "titles": [{"titre": "Café Minamdang", "note": 2.0, "annee": 2022}]}, {"name": "Park Gyu-young", "role": "actrice", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0, "annee": 2023}]}, {"name": "Baek In-ah", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0, "annee": 2023}]}, {"name": "Kim Dae-woong", "role": "realisateur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0, "annee": 2023}]}, {"name": "Yoon Chan-young", "role": "acteur", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Delivery Man", "note": 3.0, "annee": 2023}]}, {"name": "Bang Min-ah", "role": "actrice", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Delivery Man", "note": 3.0, "annee": 2023}]}, {"name": "Joo Hyo-jin", "role": "scenariste", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Delivery Man", "note": 3.0, "annee": 2023}]}, {"name": "Kang Sol", "role": "realisateur", "count": 1, "avg_note": 3.0, "variance": null, "titles": [{"titre": "Delivery Man", "note": 3.0, "annee": 2023}]}, {"name": "IU (Lee Ji-eun)", "role": "actrice", "count": 2, "avg_note": 8.0, "variance": 2.0, "titles": [{"titre": "Dream", "note": 6.0, "annee": 2023}, {"titre": "Life Gives You Tangerines", "note": 10.0, "annee": 2025}]}, {"name": "Lee Byeong-heon", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Dream", "note": 6.0, "annee": 2023}]}, {"name": "Lee Byeong-heon", "role": "realisateur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Dream", "note": 6.0, "annee": 2023}]}, {"name": "Shin Hae-sun", "role": "actrice", "count": 1, "avg_note": 9.0, "variance": null, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0, "annee": 2023}]}, {"name": "Kwon Hye-joo", "role": "scenariste", "count": 1, "avg_note": 9.0, "variance": null, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0, "annee": 2023}]}, {"name": "Cha Young-hoon", "role": "realisateur", "count": 2, "avg_note": 8.0, "variance": 1.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0, "annee": 2023}, {"titre": "We are all trying here", "note": 7.0, "annee": 2026}]}, {"name": "Jeong Kyeong-ho", "role": "acteur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Crash course in romance", "note": 7.0, "annee": 2023}]}, {"name": "Jeon Do-yeon", "role": "actrice", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Crash course in romance", "note": 7.0, "annee": 2023}]}, {"name": "Yang Hee-seung", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Crash course in romance", "note": 7.0, "annee": 2023}]}, {"name": "Tang Wei / Bae Suzy", "role": "actrice", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Wonderland", "note": 8.0, "annee": 2024}]}, {"name": "Kim Tae-yong", "role": "scenariste", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Wonderland", "note": 8.0, "annee": 2024}]}, {"name": "Kim Tae-yong", "role": "realisateur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Wonderland", "note": 8.0, "annee": 2024}]}, {"name": "Kim Woo-bin", "role": "acteur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Officers Black Belt", "note": 6.0, "annee": 2024}]}, {"name": "Jason Kim", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Officers Black Belt", "note": 6.0, "annee": 2024}]}, {"name": "Jason Kim", "role": "realisateur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Officers Black Belt", "note": 6.0, "annee": 2024}]}, {"name": "Hwang Min-hyun", "role": "acteur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Study Group", "note": 5.0, "annee": 2024}]}, {"name": "Han Ji-won", "role": "actrice", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Study Group", "note": 5.0, "annee": 2024}]}, {"name": "Jang Ho-jin", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Study Group", "note": 5.0, "annee": 2024}]}, {"name": "Lee Jang-hoon", "role": "realisateur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Study Group", "note": 5.0, "annee": 2024}]}, {"name": "Kim Soo-hyun", "role": "acteur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Queen of tears", "note": 8.0, "annee": 2024}]}, {"name": "Jang Young-woo", "role": "realisateur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Queen of tears", "note": 8.0, "annee": 2024}]}, {"name": "Byeon Woo-seok", "role": "acteur", "count": 2, "avg_note": 7.0, "variance": 1.0, "titles": [{"titre": "Lovely Runner", "note": 8.0, "annee": 2024}, {"titre": "Perfect Crown", "note": 6.0, "annee": 2026}]}, {"name": "Kim Hye-yoon", "role": "actrice", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Lovely Runner", "note": 8.0, "annee": 2024}]}, {"name": "Yoon Jong-ho", "role": "realisateur", "count": 1, "avg_note": 8.0, "variance": null, "titles": [{"titre": "Lovely Runner", "note": 8.0, "annee": 2024}]}, {"name": "Im Sang-chun", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0, "annee": 2025}]}, {"name": "Kim Won-seok", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0, "annee": 2025}]}, {"name": "Park Jin-young", "role": "acteur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0, "annee": 2025}]}, {"name": "Lee Kang", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0, "annee": 2025}]}, {"name": "Yoon Kye-sang", "role": "acteur", "count": 1, "avg_note": null, "variance": null, "titles": [{"titre": "The winning try", "note": null, "annee": 2025}]}, {"name": "Im Se-mi", "role": "actrice", "count": 1, "avg_note": null, "variance": null, "titles": [{"titre": "The winning try", "note": null, "annee": 2025}]}, {"name": "Lim Jin-ah", "role": "scenariste", "count": 1, "avg_note": null, "variance": null, "titles": [{"titre": "The winning try", "note": null, "annee": 2025}]}, {"name": "Jang Yeong-seok", "role": "realisateur", "count": 1, "avg_note": null, "variance": null, "titles": [{"titre": "The winning try", "note": null, "annee": 2025}]}, {"name": "Ryoo Seung-ryong", "role": "acteur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0, "annee": 2025}]}, {"name": "Myung Se-bin", "role": "actrice", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0, "annee": 2025}]}, {"name": "Kim Hong-ki", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0, "annee": 2025}]}, {"name": "Yoon Hye-sung", "role": "scenariste", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0, "annee": 2025}]}, {"name": "Jo Hyun-tak", "role": "realisateur", "count": 1, "avg_note": 10.0, "variance": null, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0, "annee": 2025}]}, {"name": "Jisoo", "role": "actrice", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0, "annee": 2026}]}, {"name": "Namgung Do-young", "role": "scenariste", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0, "annee": 2026}]}, {"name": "Kim Jung-sik", "role": "realisateur", "count": 1, "avg_note": 5.0, "variance": null, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0, "annee": 2026}]}, {"name": "IU", "role": "actrice", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Perfect Crown", "note": 6.0, "annee": 2026}]}, {"name": "Yoo Ji-won", "role": "scenariste", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Perfect Crown", "note": 6.0, "annee": 2026}]}, {"name": "Bae Hee-young", "role": "realisateur", "count": 1, "avg_note": 6.0, "variance": null, "titles": [{"titre": "Perfect Crown", "note": 6.0, "annee": 2026}]}, {"name": "Koo Kyo-hwan", "role": "acteur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "We are all trying here", "note": 7.0, "annee": 2026}]}, {"name": "Go Youn-jung", "role": "actrice", "count": 2, "avg_note": 7.0, "variance": 0.0, "titles": [{"titre": "We are all trying here", "note": 7.0, "annee": 2026}, {"titre": "Can this love be translated ?", "note": 7.0, "annee": 2026}]}, {"name": "Hong Jung-eun", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Can this love be translated ?", "note": 7.0, "annee": 2026}]}, {"name": "Hong Mi-ran", "role": "scenariste", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Can this love be translated ?", "note": 7.0, "annee": 2026}]}, {"name": "Yoo Young-eun", "role": "realisateur", "count": 1, "avg_note": 7.0, "variance": null, "titles": [{"titre": "Can this love be translated ?", "note": 7.0, "annee": 2026}]}], "all_collabs": [{"p1": "Gong Yoo", "role1": "acteur", "p2": "Yoon Eun-hye", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Lee Jung-ah", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Jang Hyun-joo", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Lee Yoon-jung", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Lee Jung-ah", "role1": "scenariste", "p2": "Yoon Eun-hye", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Jang Hyun-joo", "role1": "scenariste", "p2": "Yoon Eun-hye", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Lee Yoon-jung", "role1": "realisateur", "p2": "Yoon Eun-hye", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Jang Hyun-joo", "role1": "scenariste", "p2": "Lee Jung-ah", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Lee Jung-ah", "role1": "scenariste", "p2": "Lee Yoon-jung", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Jang Hyun-joo", "role1": "scenariste", "p2": "Lee Yoon-jung", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "The 1st Shop of Coffee Prince", "note": 7.0}]}, {"p1": "Hyeri", "role1": "actrice", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Park Bo-gum", "role1": "acteur", "p2": "Ra Mi-ran", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Lee Woo-jung", "role1": "scenariste", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Park Bo-gum", "role1": "acteur", "p2": "Shin Won-ho", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Hyeri", "role1": "actrice", "p2": "Ra Mi-ran", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Hyeri", "role1": "actrice", "p2": "Lee Woo-jung", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Hyeri", "role1": "actrice", "p2": "Shin Won-ho", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Lee Woo-jung", "role1": "scenariste", "p2": "Ra Mi-ran", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Ra Mi-ran", "role1": "actrice", "p2": "Shin Won-ho", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Lee Woo-jung", "role1": "scenariste", "p2": "Shin Won-ho", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Reply 1988", "note": 4.0}]}, {"p1": "Song Hye-kyo", "role1": "actrice", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Eun-sook", "role1": "scenariste", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Won-seok", "role1": "scenariste", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Lee Eung-bok", "role1": "realisateur", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Baek Sang-hoon", "role1": "realisateur", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Eun-sook", "role1": "scenariste", "p2": "Song Hye-kyo", "role2": "actrice", "count": 2, "avg_note": 7.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}, {"titre": "The Glory", "note": 10.0}]}, {"p1": "Kim Won-seok", "role1": "scenariste", "p2": "Song Hye-kyo", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Lee Eung-bok", "role1": "realisateur", "p2": "Song Hye-kyo", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Baek Sang-hoon", "role1": "realisateur", "p2": "Song Hye-kyo", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Eun-sook", "role1": "scenariste", "p2": "Kim Won-seok", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Eun-sook", "role1": "scenariste", "p2": "Lee Eung-bok", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Baek Sang-hoon", "role1": "realisateur", "p2": "Kim Eun-sook", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Kim Won-seok", "role1": "scenariste", "p2": "Lee Eung-bok", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Baek Sang-hoon", "role1": "realisateur", "p2": "Kim Won-seok", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Baek Sang-hoon", "role1": "realisateur", "p2": "Lee Eung-bok", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Descendants of the Sun", "note": 4.0}]}, {"p1": "Park Bo-young", "role1": "actrice", "p2": "Park Hyung-sik", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Baek Mi-kyeong", "role1": "scenariste", "p2": "Park Hyung-sik", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Lee Hyung-min", "role1": "realisateur", "p2": "Park Hyung-sik", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Baek Mi-kyeong", "role1": "scenariste", "p2": "Park Bo-young", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Lee Hyung-min", "role1": "realisateur", "p2": "Park Bo-young", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Baek Mi-kyeong", "role1": "scenariste", "p2": "Lee Hyung-min", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Strong Girl Bong-soon", "note": 7.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Im Sang-choon", "role1": "scenariste", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Lee Na-jeong", "role1": "realisateur", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Im Sang-choon", "role1": "scenariste", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Lee Na-jeong", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Im Sang-choon", "role1": "scenariste", "p2": "Lee Na-jeong", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Fight for My Way", "note": 10.0}]}, {"p1": "Jung So-min", "role1": "actrice", "p2": "Lee Min-ki", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Lee Min-ki", "role1": "acteur", "p2": "Yoon Nan-joong", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Lee Min-ki", "role1": "acteur", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Jung So-min", "role1": "actrice", "p2": "Yoon Nan-joong", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Jung So-min", "role1": "actrice", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Park Joon-hwa", "role1": "realisateur", "p2": "Yoon Nan-joong", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Because This Is My First Life", "note": 6.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Nam Ji-hyun", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Kwon Ki-young", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Park Sun-ho", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Kwon Ki-young", "role1": "scenariste", "p2": "Nam Ji-hyun", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Nam Ji-hyun", "role1": "actrice", "p2": "Park Sun-ho", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Kwon Ki-young", "role1": "scenariste", "p2": "Park Sun-ho", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Suspicious Partner", "note": 7.0}]}, {"p1": "Park Min-young", "role1": "actrice", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Jung Eun-young", "role1": "scenariste", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Park Joon-hwa", "role1": "realisateur", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Jung Eun-young", "role1": "scenariste", "p2": "Park Min-young", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Park Joon-hwa", "role1": "realisateur", "p2": "Park Min-young", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Jung Eun-young", "role1": "scenariste", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "What's Wrong with Secretary Kim", "note": 7.0}]}, {"p1": "Kim Yoo-jung", "role1": "actrice", "p2": "Yoon Kyun-sang", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "Han Hee-jung", "role1": "scenariste", "p2": "Yoon Kyun-sang", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "No Jong-chan", "role1": "realisateur", "p2": "Yoon Kyun-sang", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "Han Hee-jung", "role1": "scenariste", "p2": "Kim Yoo-jung", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "Kim Yoo-jung", "role1": "actrice", "p2": "No Jong-chan", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "Han Hee-jung", "role1": "scenariste", "p2": "No Jong-chan", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Clean With Passion for Now", "note": 6.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "No Ji-sul", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Lee Jong-jae", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Nam Sung-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Lee Jong-jae", "role1": "realisateur", "p2": "No Ji-sul", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Nam Sung-woo", "role1": "realisateur", "p2": "No Ji-sul", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Lee Jong-jae", "role1": "realisateur", "p2": "Nam Sung-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "100 days my prince", "note": 5.0}]}, {"p1": "Kim Jae-wook", "role1": "acteur", "p2": "Park Min-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Kim Hye-young", "role1": "scenariste", "p2": "Kim Jae-wook", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Kim Jae-wook", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Kim Hye-young", "role1": "scenariste", "p2": "Park Min-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Park Min-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Kim Hye-young", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Her Private Life", "note": 6.0}]}, {"p1": "Hyun Bin", "role1": "acteur", "p2": "Son Ye-jin", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Hyun Bin", "role1": "acteur", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Hyun Bin", "role1": "acteur", "p2": "Lee Jung-hyo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Park Ji-eun", "role1": "scenariste", "p2": "Son Ye-jin", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Lee Jung-hyo", "role1": "realisateur", "p2": "Son Ye-jin", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Lee Jung-hyo", "role1": "realisateur", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Crash Landing on You", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Kim Yoo-jung", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Son Geun-joo", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Lee Myung-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Kim Yoo-jung", "role1": "actrice", "p2": "Son Geun-joo", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Kim Yoo-jung", "role1": "actrice", "p2": "Lee Myung-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Lee Myung-woo", "role1": "realisateur", "p2": "Son Geun-joo", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Backstreet Rookie", "note": 10.0}]}, {"p1": "Cha Eun-woo", "role1": "acteur", "p2": "Moon Ga-young", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Cha Eun-woo", "role1": "acteur", "p2": "Lee Si-eun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Cha Eun-woo", "role1": "acteur", "p2": "Kim Sang-hyeop", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Lee Si-eun", "role1": "scenariste", "p2": "Moon Ga-young", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Kim Sang-hyeop", "role1": "realisateur", "p2": "Moon Ga-young", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Kim Sang-hyeop", "role1": "realisateur", "p2": "Lee Si-eun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "True Beauty", "note": 10.0}]}, {"p1": "Kim Da-mi", "role1": "actrice", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Jo Gwang-jin", "role1": "scenariste", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Kim Sung-yoon", "role1": "realisateur", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Jo Gwang-jin", "role1": "scenariste", "p2": "Kim Da-mi", "role2": "actrice", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Kim Da-mi", "role1": "actrice", "p2": "Kim Sung-yoon", "role2": "realisateur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Jo Gwang-jin", "role1": "scenariste", "p2": "Kim Sung-yoon", "role2": "realisateur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Itaewon Class", "note": 9.0}]}, {"p1": "Park Bo-gum", "role1": "acteur", "p2": "Park So-dam", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ha Myung-hee", "role1": "scenariste", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ha Myung-hee", "role1": "scenariste", "p2": "Park So-dam", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Park So-dam", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Ha Myung-hee", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Record of Youth", "note": 5.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Jung Hyun-jung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Jung Da-yun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Jung Hyun-jung", "role1": "scenariste", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Jung Da-yun", "role1": "scenariste", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Jung Da-yun", "role1": "scenariste", "p2": "Jung Hyun-jung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Jung Hyun-jung", "role1": "scenariste", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Jung Da-yun", "role1": "scenariste", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Lovestruck in the city", "note": 10.0}]}, {"p1": "Bae Suzy", "role1": "actrice", "p2": "Kim Seon-ho", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Park Hye-ryun", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Oh Chung-hwan", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Bae Suzy", "role1": "actrice", "p2": "Park Hye-ryun", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Bae Suzy", "role1": "actrice", "p2": "Oh Chung-hwan", "role2": "realisateur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Oh Chung-hwan", "role1": "realisateur", "p2": "Park Hye-ryun", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Start-up", "note": 4.0}]}, {"p1": "Jeon Yeo-been", "role1": "actrice", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Park Jae-bum", "role1": "scenariste", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Kim Hee-won", "role1": "realisateur", "p2": "Song Joong-ki", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Jeon Yeo-been", "role1": "actrice", "p2": "Park Jae-bum", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Jeon Yeo-been", "role1": "actrice", "p2": "Kim Hee-won", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Kim Hee-won", "role1": "realisateur", "p2": "Park Jae-bum", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Vincenzo", "note": 7.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Shin Min-a", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Shin Ha-eun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Shin Ha-eun", "role1": "scenariste", "p2": "Shin Min-a", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Shin Min-a", "role1": "actrice", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Shin Ha-eun", "role1": "scenariste", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Hometown Cha-Cha-Cha", "note": 10.0}]}, {"p1": "Park Bo-young", "role1": "actrice", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Im Me-a-ri", "role1": "scenariste", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Kwon Young-il", "role1": "realisateur", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Im Me-a-ri", "role1": "scenariste", "p2": "Park Bo-young", "role2": "actrice", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Kwon Young-il", "role1": "realisateur", "p2": "Park Bo-young", "role2": "actrice", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Im Me-a-ri", "role1": "scenariste", "p2": "Kwon Young-il", "role2": "realisateur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Doom at Your Service", "note": 3.0}]}, {"p1": "Lee Je-hoon", "role1": "acteur", "p2": "Pyo Ye-jin", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Je-hoon", "role1": "acteur", "p2": "Oh Sang-ho", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Je-hoon", "role1": "acteur", "p2": "Lee Ji-hyun", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Je-hoon", "role1": "acteur", "p2": "Park Joon-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Oh Sang-ho", "role1": "scenariste", "p2": "Pyo Ye-jin", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Ji-hyun", "role1": "scenariste", "p2": "Pyo Ye-jin", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Park Joon-woo", "role1": "realisateur", "p2": "Pyo Ye-jin", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Ji-hyun", "role1": "scenariste", "p2": "Oh Sang-ho", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Oh Sang-ho", "role1": "scenariste", "p2": "Park Joon-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Lee Ji-hyun", "role1": "scenariste", "p2": "Park Joon-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Taxi Driver", "note": 5.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Son Suk-ku", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Park Hae-young", "role1": "scenariste", "p2": "Son Suk-ku", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Kim Seok-yoon", "role1": "realisateur", "p2": "Son Suk-ku", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Park Hae-young", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Kim Seok-yoon", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Kim Seok-yoon", "role1": "realisateur", "p2": "Park Hae-young", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "My Liberation Notes", "note": 8.0}]}, {"p1": "Lee Do-hyun", "role1": "acteur", "p2": "Song Hye-kyo", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "The Glory", "note": 10.0}]}, {"p1": "Kim Eun-sook", "role1": "scenariste", "p2": "Lee Do-hyun", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "The Glory", "note": 10.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Lee Do-hyun", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "The Glory", "note": 10.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Song Hye-kyo", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "The Glory", "note": 10.0}]}, {"p1": "Ahn Gil-ho", "role1": "realisateur", "p2": "Kim Eun-sook", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "The Glory", "note": 10.0}]}, {"p1": "Kim Hye-soo", "role1": "actrice", "p2": "Kim Mu-yeol", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Kim Min-seok", "role1": "scenariste", "p2": "Kim Mu-yeol", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Kim Mu-yeol", "role2": "acteur", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Kim Hye-soo", "role1": "actrice", "p2": "Kim Min-seok", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Kim Hye-soo", "role2": "actrice", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Hong Jong-chan", "role1": "realisateur", "p2": "Kim Min-seok", "role2": "scenariste", "count": 1, "avg_note": 4.0, "titles": [{"titre": "Juvenile Justice", "note": 4.0}]}, {"p1": "Oh Yeon-seo", "role1": "actrice", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Park Hye-jin", "role1": "scenariste", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Go Jae-hyun", "role1": "realisateur", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Oh Yeon-seo", "role1": "actrice", "p2": "Park Hye-jin", "role2": "scenariste", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Go Jae-hyun", "role1": "realisateur", "p2": "Oh Yeon-seo", "role2": "actrice", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Go Jae-hyun", "role1": "realisateur", "p2": "Park Hye-jin", "role2": "scenariste", "count": 1, "avg_note": 2.0, "titles": [{"titre": "Café Minamdang", "note": 2.0}]}, {"p1": "Cha Eun-woo", "role1": "acteur", "p2": "Park Gyu-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Baek In-ah", "role1": "scenariste", "p2": "Cha Eun-woo", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Cha Eun-woo", "role1": "acteur", "p2": "Kim Dae-woong", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Baek In-ah", "role1": "scenariste", "p2": "Park Gyu-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Kim Dae-woong", "role1": "realisateur", "p2": "Park Gyu-young", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Baek In-ah", "role1": "scenariste", "p2": "Kim Dae-woong", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "A Good Day to Be a Dog", "note": 6.0}]}, {"p1": "Bang Min-ah", "role1": "actrice", "p2": "Yoon Chan-young", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "Joo Hyo-jin", "role1": "scenariste", "p2": "Yoon Chan-young", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "Kang Sol", "role1": "realisateur", "p2": "Yoon Chan-young", "role2": "acteur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "Bang Min-ah", "role1": "actrice", "p2": "Joo Hyo-jin", "role2": "scenariste", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "Bang Min-ah", "role1": "actrice", "p2": "Kang Sol", "role2": "realisateur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "Joo Hyo-jin", "role1": "scenariste", "p2": "Kang Sol", "role2": "realisateur", "count": 1, "avg_note": 3.0, "titles": [{"titre": "Delivery Man", "note": 3.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "Lee Byeong-heon", "role1": "scenariste", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "Lee Byeong-heon", "role1": "realisateur", "p2": "Park Seo-joon", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Lee Byeong-heon", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Lee Byeong-heon", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "Lee Byeong-heon", "role1": "realisateur", "p2": "Lee Byeong-heon", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Dream", "note": 6.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Shin Hae-sun", "role2": "actrice", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Ji Chang-wook", "role1": "acteur", "p2": "Kwon Hye-joo", "role2": "scenariste", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Ji Chang-wook", "role2": "acteur", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Kwon Hye-joo", "role1": "scenariste", "p2": "Shin Hae-sun", "role2": "actrice", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Shin Hae-sun", "role2": "actrice", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Kwon Hye-joo", "role2": "scenariste", "count": 1, "avg_note": 9.0, "titles": [{"titre": "Welcome to Samdal-ri", "note": 9.0}]}, {"p1": "Jeon Do-yeon", "role1": "actrice", "p2": "Jeong Kyeong-ho", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Jeong Kyeong-ho", "role1": "acteur", "p2": "Yang Hee-seung", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Jeong Kyeong-ho", "role1": "acteur", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Jeon Do-yeon", "role1": "actrice", "p2": "Yang Hee-seung", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Jeon Do-yeon", "role1": "actrice", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Yang Hee-seung", "role1": "scenariste", "p2": "Yoo Je-won", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Crash course in romance", "note": 7.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Tang Wei / Bae Suzy", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Kim Tae-yong", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Gong Yoo", "role1": "acteur", "p2": "Kim Tae-yong", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Kim Tae-yong", "role1": "scenariste", "p2": "Tang Wei / Bae Suzy", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Kim Tae-yong", "role1": "realisateur", "p2": "Tang Wei / Bae Suzy", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Kim Tae-yong", "role1": "realisateur", "p2": "Kim Tae-yong", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Wonderland", "note": 8.0}]}, {"p1": "Jason Kim", "role1": "scenariste", "p2": "Kim Woo-bin", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Officers Black Belt", "note": 6.0}]}, {"p1": "Jason Kim", "role1": "realisateur", "p2": "Kim Woo-bin", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Officers Black Belt", "note": 6.0}]}, {"p1": "Jason Kim", "role1": "realisateur", "p2": "Jason Kim", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Officers Black Belt", "note": 6.0}]}, {"p1": "Han Ji-won", "role1": "actrice", "p2": "Hwang Min-hyun", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Hwang Min-hyun", "role1": "acteur", "p2": "Jang Ho-jin", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Hwang Min-hyun", "role1": "acteur", "p2": "Lee Jang-hoon", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Han Ji-won", "role1": "actrice", "p2": "Jang Ho-jin", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Han Ji-won", "role1": "actrice", "p2": "Lee Jang-hoon", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Jang Ho-jin", "role1": "scenariste", "p2": "Lee Jang-hoon", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Study Group", "note": 5.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Kim Soo-hyun", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Kim Soo-hyun", "role1": "acteur", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Kim Hee-won", "role1": "realisateur", "p2": "Kim Soo-hyun", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Jang Young-woo", "role1": "realisateur", "p2": "Kim Soo-hyun", "role2": "acteur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Kim Ji-won", "role1": "actrice", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Kim Hee-won", "role1": "realisateur", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Jang Young-woo", "role1": "realisateur", "p2": "Kim Ji-won", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Kim Hee-won", "role1": "realisateur", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Jang Young-woo", "role1": "realisateur", "p2": "Park Ji-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Jang Young-woo", "role1": "realisateur", "p2": "Kim Hee-won", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Queen of tears", "note": 8.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "Kim Hye-yoon", "role2": "actrice", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "Lee Si-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "Yoon Jong-ho", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "Kim Hye-yoon", "role1": "actrice", "p2": "Lee Si-eun", "role2": "scenariste", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "Kim Hye-yoon", "role1": "actrice", "p2": "Yoon Jong-ho", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "Lee Si-eun", "role1": "scenariste", "p2": "Yoon Jong-ho", "role2": "realisateur", "count": 1, "avg_note": 8.0, "titles": [{"titre": "Lovely Runner", "note": 8.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "Im Sang-chun", "role1": "scenariste", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "Kim Won-seok", "role1": "realisateur", "p2": "Park Bo-gum", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Im Sang-chun", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "IU (Lee Ji-eun)", "role1": "actrice", "p2": "Kim Won-seok", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "Im Sang-chun", "role1": "scenariste", "p2": "Kim Won-seok", "role2": "realisateur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "Life Gives You Tangerines", "note": 10.0}]}, {"p1": "Park Bo-young", "role1": "actrice", "p2": "Park Jin-young", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Lee Kang", "role1": "scenariste", "p2": "Park Jin-young", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Park Jin-young", "role1": "acteur", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Lee Kang", "role1": "scenariste", "p2": "Park Bo-young", "role2": "actrice", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Park Bo-young", "role1": "actrice", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Lee Kang", "role1": "scenariste", "p2": "Park Shin-woo", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Our unwritten Seoul", "note": 5.0}]}, {"p1": "Im Se-mi", "role1": "actrice", "p2": "Yoon Kye-sang", "role2": "acteur", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Lim Jin-ah", "role1": "scenariste", "p2": "Yoon Kye-sang", "role2": "acteur", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Jang Yeong-seok", "role1": "realisateur", "p2": "Yoon Kye-sang", "role2": "acteur", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Im Se-mi", "role1": "actrice", "p2": "Lim Jin-ah", "role2": "scenariste", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Im Se-mi", "role1": "actrice", "p2": "Jang Yeong-seok", "role2": "realisateur", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Jang Yeong-seok", "role1": "realisateur", "p2": "Lim Jin-ah", "role2": "scenariste", "count": 1, "avg_note": null, "titles": [{"titre": "The winning try", "note": null}]}, {"p1": "Myung Se-bin", "role1": "actrice", "p2": "Ryoo Seung-ryong", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Kim Hong-ki", "role1": "scenariste", "p2": "Ryoo Seung-ryong", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Ryoo Seung-ryong", "role1": "acteur", "p2": "Yoon Hye-sung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Jo Hyun-tak", "role1": "realisateur", "p2": "Ryoo Seung-ryong", "role2": "acteur", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Kim Hong-ki", "role1": "scenariste", "p2": "Myung Se-bin", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Myung Se-bin", "role1": "actrice", "p2": "Yoon Hye-sung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Jo Hyun-tak", "role1": "realisateur", "p2": "Myung Se-bin", "role2": "actrice", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Kim Hong-ki", "role1": "scenariste", "p2": "Yoon Hye-sung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Jo Hyun-tak", "role1": "realisateur", "p2": "Kim Hong-ki", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Jo Hyun-tak", "role1": "realisateur", "p2": "Yoon Hye-sung", "role2": "scenariste", "count": 1, "avg_note": 10.0, "titles": [{"titre": "La Vie rêvée de M. Kim", "note": 10.0}]}, {"p1": "Jisoo", "role1": "actrice", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Namgung Do-young", "role1": "scenariste", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Kim Jung-sik", "role1": "realisateur", "p2": "Seo In-guk", "role2": "acteur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Jisoo", "role1": "actrice", "p2": "Namgung Do-young", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Jisoo", "role1": "actrice", "p2": "Kim Jung-sik", "role2": "realisateur", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Kim Jung-sik", "role1": "realisateur", "p2": "Namgung Do-young", "role2": "scenariste", "count": 1, "avg_note": 5.0, "titles": [{"titre": "Boyfriend on Demand", "note": 5.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "IU", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "Yoo Ji-won", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Byeon Woo-seok", "role1": "acteur", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Bae Hee-young", "role1": "realisateur", "p2": "Byeon Woo-seok", "role2": "acteur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "IU", "role1": "actrice", "p2": "Yoo Ji-won", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "IU", "role1": "actrice", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Bae Hee-young", "role1": "realisateur", "p2": "IU", "role2": "actrice", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Park Joon-hwa", "role1": "realisateur", "p2": "Yoo Ji-won", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Bae Hee-young", "role1": "realisateur", "p2": "Yoo Ji-won", "role2": "scenariste", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Bae Hee-young", "role1": "realisateur", "p2": "Park Joon-hwa", "role2": "realisateur", "count": 1, "avg_note": 6.0, "titles": [{"titre": "Perfect Crown", "note": 6.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Koo Kyo-hwan", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Koo Kyo-hwan", "role1": "acteur", "p2": "Park Hae-young", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Koo Kyo-hwan", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Park Hae-young", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Go Youn-jung", "role2": "actrice", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Cha Young-hoon", "role1": "realisateur", "p2": "Park Hae-young", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "We are all trying here", "note": 7.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Kim Seon-ho", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Hong Jung-eun", "role1": "scenariste", "p2": "Kim Seon-ho", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Hong Mi-ran", "role1": "scenariste", "p2": "Kim Seon-ho", "role2": "acteur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Kim Seon-ho", "role1": "acteur", "p2": "Yoo Young-eun", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Hong Jung-eun", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Hong Mi-ran", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Go Youn-jung", "role1": "actrice", "p2": "Yoo Young-eun", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Hong Jung-eun", "role1": "scenariste", "p2": "Hong Mi-ran", "role2": "scenariste", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Hong Jung-eun", "role1": "scenariste", "p2": "Yoo Young-eun", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}, {"p1": "Hong Mi-ran", "role1": "scenariste", "p2": "Yoo Young-eun", "role2": "realisateur", "count": 1, "avg_note": 7.0, "titles": [{"titre": "Can this love be translated ?", "note": 7.0}]}], "year_stats": [{"annee": 2007, "count": 1, "avg_note": 7.0}, {"annee": 2015, "count": 1, "avg_note": 4.0}, {"annee": 2016, "count": 1, "avg_note": 4.0}, {"annee": 2017, "count": 4, "avg_note": 7.5}, {"annee": 2018, "count": 3, "avg_note": 6.0}, {"annee": 2019, "count": 2, "avg_note": 8.0}, {"annee": 2020, "count": 6, "avg_note": 8.0}, {"annee": 2021, "count": 4, "avg_note": 6.25}, {"annee": 2022, "count": 4, "avg_note": 6.0}, {"annee": 2023, "count": 5, "avg_note": 6.2}, {"annee": 2024, "count": 5, "avg_note": 7.0}, {"annee": 2025, "count": 4, "avg_note": 8.33}, {"annee": 2026, "count": 4, "avg_note": 6.25}], "records": {"best": "Fight for My Way", "worst": "Café Minamdang", "oldest": "The 1st Shop of Coffee Prince", "newest": "Boyfriend on Demand", "longest": "Suspicious Partner", "shortest": "Study Group", "avg_note": 6.79, "coups_de_coeur": 11, "deceptions": 7, "distribution": {"2": 1, "3": 2, "4": 4, "5": 6, "6": 7, "7": 8, "8": 4, "9": 2, "10": 9}, "total_hours": 650.0, "most_generous_year": {"annee": 2025, "count": 4, "avg_note": 8.33}, "most_severe_year": {"annee": 2015, "count": 1, "avg_note": 4.0}}}
+;
+
+// ---------- Helpers ----------
+const fmtNote = (n) => n === null || n === undefined ? "—" : (Number.isInteger(n) ? n : n.toFixed(1));
+const reliabilityBadge = (count) => {
+  if (count >= 3) return '<span class="badge b3">Tendance · ' + count + ' titres</span>';
+  if (count === 2) return '<span class="badge b2">À confirmer · 2 titres</span>';
+  return '<span class="badge b1">Anecdotique · 1 titre</span>';
+};
+const roleLabel = (r) => ({acteur:"Acteur", actrice:"Actrice", scenariste:"Scénariste", realisateur:"Réalisateur"}[r] || r);
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tabnav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabnav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+});
+
+// ---------- Hero stats ----------
+(function renderHero() {
+  const r = DATA.records;
+  const el = document.getElementById('heroStats');
+  el.innerHTML = `
+    <div class="hero-stat"><span class="num">${DATA.titles.length}</span><span class="lbl">titres vus</span></div>
+    <div class="hero-stat"><span class="num">${r.avg_note}</span><span class="lbl">note moy.</span></div>
+    <div class="hero-stat"><span class="num">${Math.round(r.total_hours)}</span><span class="lbl">heures</span></div>
+    <div class="hero-stat"><span class="num">${DATA.people_profiles.length}</span><span class="lbl">personnes</span></div>
+  `;
+})();
+
+// ---------- Overview: records grid ----------
+(function renderRecords() {
+  const r = DATA.records;
+  const find = (titre) => DATA.titles.find(t => t.titre === titre);
+  const cards = [
+    {label: "Mieux noté", t: find(r.best)},
+    {label: "Moins bien noté", t: find(r.worst)},
+    {label: "Le plus ancien", t: find(r.oldest)},
+    {label: "Le plus récent", t: find(r.newest)},
+    {label: "Le plus long", t: find(r.longest)},
+    {label: "Le plus court", t: find(r.shortest)},
+  ];
+  document.getElementById('recordsGrid').innerHTML = cards.map(c => `
+    <div class="record-card">
+      <p class="rk-label">${c.label}</p>
+      <p class="rk-title">${c.t.titre}</p>
+      <p class="rk-meta">${c.t.note !== null ? c.t.note + '/10 · ' : ''}${c.t.annee}${c.t.episodes ? ' · ' + c.t.episodes + ' ép.' : ''}</p>
+    </div>
+  `).join('');
+})();
+
+// ---------- Overview: distribution chart ----------
+(function renderDist() {
+  const dist = DATA.records.distribution;
+  const max = Math.max(...Object.values(dist));
+  let html = '';
+  for (let n = 0; n <= 10; n++) {
+    const count = dist[String(n)] || 0;
+    const h = count ? Math.max(8, (count / max) * 110) : 4;
+    const warm = n >= 9 ? 'warm' : '';
+    html += `<div class="dist-bar-col">
+      <span class="dist-bar-num">${count || ''}</span>
+      <div class="dist-bar ${warm}" style="height:${h}px"></div>
+      <span class="dist-bar-lbl">${n}</span>
+    </div>`;
+  }
+  document.getElementById('distChart').innerHTML = html;
+
+  const r = DATA.records;
+  const ratio = (r.coups_de_coeur / DATA.titles.length * 100).toFixed(0);
+  document.getElementById('profileInsight').innerHTML =
+    `<b>${r.coups_de_coeur} coups de cœur</b> (note ≥ 9, soit ${ratio}% de la liste) contre <b>${r.deceptions} déceptions</b> (note ≤ 4). ` +
+    `Note moyenne générale : <b>${r.avg_note}/10</b> — plutôt généreuse que sévère.`;
+})();
+
+// ---------- People rankings ----------
+let currentRole = 'acteur';
+let currentSort = 'count';
+
+function renderPeopleList() {
+  let list = DATA.people_profiles.filter(p => p.role === currentRole);
+  list.sort((a, b) => {
+    if (currentSort === 'count') return b.count - a.count || (b.avg_note||0) - (a.avg_note||0);
+    return (b.avg_note||0) - (a.avg_note||0) || b.count - a.count;
+  });
+  list = list.slice(0, 25);
+  document.getElementById('peopleList').innerHTML = list.map((p, i) => `
+    <div class="person-row" data-name="${encodeURIComponent(p.name)}" data-role="${p.role}">
+      <span class="person-rank">${i + 1}</span>
+      <div class="person-info">
+        <p class="person-name">${p.name}</p>
+        <p class="person-sub">${p.count} titre${p.count > 1 ? 's' : ''} ${p.avg_note !== null ? '· note moy. ' + fmtNote(p.avg_note) : ''}</p>
+      </div>
+      <div class="person-score">
+        <span class="v ${currentSort === 'count' ? 'count' : ''}">${currentSort === 'count' ? p.count : fmtNote(p.avg_note)}</span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-msg">Aucune donnée pour cette catégorie.</div>';
+
+  document.querySelectorAll('.person-row').forEach(row => {
+    row.addEventListener('click', () => openPersonModal(decodeURIComponent(row.dataset.name), row.dataset.role));
+  });
+}
+
+document.querySelectorAll('#roleToggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#roleToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRole = btn.dataset.role;
+    renderPeopleList();
+  });
+});
+document.querySelectorAll('#sortToggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#sortToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSort = btn.dataset.sort;
+    renderPeopleList();
+  });
+});
+renderPeopleList();
+
+// ---------- Collaborations ----------
+function findPersonCollabs(name, role) {
+  return DATA.all_collabs.filter(c =>
+    (c.p1 === name && c.role1 === role) || (c.p2 === name && c.role2 === role)
+  );
+}
+
+(function renderHighlightCollab() {
+  const recurring = DATA.all_collabs.filter(c => c.count >= 2).sort((a,b) => b.count - a.count);
+  if (recurring.length === 0) {
+    document.getElementById('highlightCollab').style.display = 'none';
+    return;
+  }
+  const top = recurring[0];
+  const noteRange = top.titles.map(t => fmtNote(t.note)).join(' → ');
+  document.getElementById('highlightCollab').innerHTML = `
+    <div class="hc-label">La seule collaboration qui s'est répétée</div>
+    <div class="hc-names">${top.p1} <span style="color:var(--ink-faint); font-weight:400;">(${roleLabel(top.role1)})</span> + ${top.p2} <span style="color:var(--ink-faint); font-weight:400;">(${roleLabel(top.role2)})</span></div>
+    <div class="hc-detail">${top.titles.map(t => t.titre + ' — ' + fmtNote(t.note) + '/10').join('<br>')}<br><br>
+    Sur ${DATA.all_collabs.length} paires de personnes recensées dans ta liste, c'est la seule à s'être reformée — et leurs notes vont de ${noteRange}, ce qui montre surtout que la note dépend bien plus du titre que du tandem.</div>
+  `;
+})();
+
+function renderCollabList(query) {
+  const q = (query || '').trim().toLowerCase();
+  let list = DATA.all_collabs;
+  if (q) {
+    list = list.filter(c => c.p1.toLowerCase().includes(q) || c.p2.toLowerCase().includes(q));
+  } else {
+    list = list.filter(c => c.count >= 2);
+  }
+  list = list.slice(0, 60);
+  if (list.length === 0) {
+    document.getElementById('collabList').innerHTML = '<div class="empty-msg">' +
+      (q ? 'Aucune collaboration trouvée pour "' + query + '".' : 'Tape un nom ci-dessus pour explorer toutes ses collaborations (la plupart, vues une seule fois, ne sont pas affichées par défaut).') +
+      '</div>';
+    return;
+  }
+  document.getElementById('collabList').innerHTML = list.map(c => `
+    <div class="collab-row">
+      <div class="collab-people">
+        <span class="p">${c.p1}</span><span class="x">${roleLabel(c.role1)}</span> + <span class="p">${c.p2}</span><span class="x">${roleLabel(c.role2)}</span>
+        <div class="titles-list">${c.titles.map(t => t.titre).join(', ')}</div>
+      </div>
+      <div class="collab-note">${c.avg_note !== null ? fmtNote(c.avg_note) : '—'}</div>
+    </div>
+  `).join('');
+}
+renderCollabList('');
+document.getElementById('collabSearch').addEventListener('input', (e) => renderCollabList(e.target.value));
+
+// ---------- Variance ----------
+(function renderVariance() {
+  const withVar = DATA.people_profiles.filter(p => p.variance !== null);
+  const sorted = [...withVar].sort((a, b) => a.variance - b.variance);
+  const consistent = sorted.slice(0, 8);
+  const variable = sorted.slice(-8).reverse();
+
+  const rowHtml = (p, tag) => `
+    <div class="person-row" data-name="${encodeURIComponent(p.name)}" data-role="${p.role}">
+      <span class="person-rank" style="width:auto; font-size:11px; color: ${tag === 'steady' ? 'var(--celadon)' : 'var(--seal)'};">${tag === 'steady' ? '◆' : '◇'}</span>
+      <div class="person-info">
+        <p class="person-name">${p.name} <span style="color:var(--ink-faint); font-weight:400; font-size:11.5px;">(${roleLabel(p.role)})</span></p>
+        <p class="person-sub">${p.titles.map(t => fmtNote(t.note)).join(' · ')} sur ${p.count} titres</p>
+      </div>
+      <div class="person-score"><span class="v" style="color: ${tag === 'steady' ? 'var(--celadon)' : 'var(--seal)'};">${p.variance.toFixed(1)}</span></div>
+    </div>
+  `;
+
+  document.getElementById('varianceList').innerHTML = `
+    <h3 style="font-family:'Noto Serif KR',serif; font-size:15px; margin: 0 0 10px;">Les plus réguliers</h3>
+    <p class="section-note" style="margin-bottom:12px;">Écart-type le plus bas : tu les notes presque toujours pareil.</p>
+    ${consistent.map(p => rowHtml(p, 'steady')).join('')}
+    <h3 style="font-family:'Noto Serif KR',serif; font-size:15px; margin: 22px 0 10px;">Les plus imprévisibles</h3>
+    <p class="section-note" style="margin-bottom:12px;">Écart-type le plus haut : leur meilleur et leur pire titre chez toi sont très loin l'un de l'autre.</p>
+    ${variable.map(p => rowHtml(p, 'variable')).join('')}
+  `;
+
+  document.querySelectorAll('#panel-variance .person-row').forEach(row => {
+    row.addEventListener('click', () => openPersonModal(decodeURIComponent(row.dataset.name), row.dataset.role));
+  });
+})();
+
+// ---------- Time ----------
+(function renderYearChart() {
+  const stats = DATA.year_stats;
+  const maxCount = Math.max(...stats.map(y => y.count));
+  document.getElementById('yearChart').innerHTML = stats.map(y => {
+    const h = Math.max(20, (y.count / maxCount) * 130);
+    return `<div class="year-col">
+      <span class="year-bar-note">${y.avg_note !== null ? fmtNote(y.avg_note) : '—'}</span>
+      <div class="year-bar" style="height:${h}px;" title="${y.count} titre(s)"></div>
+      <span class="year-bar-lbl">${y.annee}</span>
+    </div>`;
+  }).join('');
+
+  const mg = DATA.records.most_generous_year;
+  const ms = DATA.records.most_severe_year;
+  document.getElementById('yearInsight').innerHTML =
+    `Année la mieux notée chez toi : <b>${mg.annee}</b> (${fmtNote(mg.avg_note)}/10 de moyenne, sur ${mg.count} titre${mg.count>1?'s':''}). ` +
+    `Année la moins bien notée : <b>${ms.annee}</b> (${fmtNote(ms.avg_note)}/10${ms.count === 1 ? ' — un seul titre cette année-là, donc ce chiffre reflète ce titre précis plus qu\'une vraie tendance' : ', sur ' + ms.count + ' titres'}).`;
+})();
+
+// ---------- Format ----------
+(function renderFormat() {
+  const withFormat = DATA.titles.filter(t => t.episodes && t.duree && t.note !== null);
+  const short = withFormat.filter(t => t.episodes <= 12);
+  const long = withFormat.filter(t => t.episodes > 12);
+  const avg = (arr) => arr.reduce((s, t) => s + t.note, 0) / arr.length;
+
+  document.getElementById('formatCards').innerHTML = `
+    <div class="records-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="record-card">
+        <p class="rk-label">Formats courts (≤ 12 ép.)</p>
+        <p class="rk-title">${fmtNote(avg(short))}/10 en moyenne</p>
+        <p class="rk-meta">sur ${short.length} titres</p>
+      </div>
+      <div class="record-card">
+        <p class="rk-label">Formats longs (> 12 ép.)</p>
+        <p class="rk-title">${fmtNote(avg(long))}/10 en moyenne</p>
+        <p class="rk-meta">sur ${long.length} titres</p>
+      </div>
+    </div>
+    <div class="insight-box">
+      Chez toi, les formats ${avg(long) > avg(short) ? 'longs (16 épisodes et plus) sont légèrement mieux notés' : 'courts sont légèrement mieux notés'} que les ${avg(long) > avg(short) ? 'courts' : 'longs'} — un écart de ${Math.abs(avg(long)-avg(short)).toFixed(2)} point${Math.abs(avg(long)-avg(short))>=2?'s':''}, sur des échantillons de taille raisonnable (${short.length} vs ${long.length} titres).
+    </div>
+  `;
+})();
+
+// ---------- Person modal ----------
+function openPersonModal(name, role) {
+  const profile = DATA.people_profiles.find(p => p.name === name && p.role === role);
+  if (!profile) return;
+  document.getElementById('modalName').textContent = profile.name;
+  document.getElementById('modalRole').textContent = roleLabel(profile.role);
+
+  const collabs = findPersonCollabs(name, role);
+  const sortedCollabs = [...collabs].sort((a,b) => b.count - a.count);
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-stat-row">
+      <div class="modal-stat"><div class="v">${profile.count}</div><div class="l">Titres vus</div></div>
+      <div class="modal-stat"><div class="v">${profile.avg_note !== null ? fmtNote(profile.avg_note) : '—'}</div><div class="l">Note moy.</div></div>
+      <div class="modal-stat"><div class="v">${profile.variance !== null ? profile.variance.toFixed(1) : '—'}</div><div class="l">Écart-type</div></div>
+    </div>
+    ${reliabilityBadge(profile.count)}
+    <div class="modal-section-h">Ses titres</div>
+    ${profile.titles.map(t => `<div class="modal-title-row"><span>${t.titre} <span style="color:var(--ink-faint);">(${t.annee})</span></span><span class="note">${fmtNote(t.note)}</span></div>`).join('')}
+    <div class="modal-section-h">A travaillé avec (${collabs.length})</div>
+    ${sortedCollabs.length ? sortedCollabs.map(c => {
+      const other = c.p1 === name && c.role1 === role ? {name: c.p2, role: c.role2} : {name: c.p1, role: c.role1};
+      return `<div class="collab-link-row" data-name="${encodeURIComponent(other.name)}" data-role="${other.role}">
+        <span class="cn">${other.name} <span class="cr">(${roleLabel(other.role)})</span></span>
+        <span style="color:var(--seal); font-weight:600;">${c.avg_note !== null ? fmtNote(c.avg_note) : '—'}</span>
+      </div>`;
+    }).join('') : '<p class="section-note">Aucune collaboration recensée.</p>'}
+  `;
+
+  document.querySelectorAll('.collab-link-row').forEach(row => {
+    row.addEventListener('click', () => openPersonModal(decodeURIComponent(row.dataset.name), row.dataset.role));
+  });
+
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.add('hidden');
+});
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') document.getElementById('modalOverlay').classList.add('hidden');
+});
+</script>
+</body>
+</html>
