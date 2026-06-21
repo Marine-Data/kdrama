@@ -1081,7 +1081,7 @@ function renderTrendsView() {
   const tasteParts = [];
   if (tasteProfile.topActor && tasteProfile.topActor.count >= 2) tasteParts.push(`Adore ${tasteProfile.topActor.name}`);
   if (tasteProfile.topActress && tasteProfile.topActress.count >= 2) tasteParts.push(`suis ${tasteProfile.topActress.name} partout`);
-  if (tasteProfile.topScenariste) tasteParts.push(`la plume de ${tasteProfile.topScenariste.name} (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
+  if (tasteProfile.topScenariste) tasteParts.push(`aime la plume de ${tasteProfile.topScenariste.name} (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
   tasteParts.push(`préfère les formats ${tasteProfile.formatLean}`);
   const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(", ")}.` : null;
 
