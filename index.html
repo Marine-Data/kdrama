@@ -1085,11 +1085,11 @@ function renderTrendsView() {
 
   // Build a one-line personal taste sentence from available signals.
   const tasteParts = [];
-  if (tasteProfile.topActor && tasteProfile.topActor.count >= 2) tasteParts.push(`tu adores ${tasteProfile.topActor.name}`);
+  if (tasteProfile.topActor && tasteProfile.topActor.count >= 2) tasteParts.push(`adore ${tasteProfile.topActor.name}`);
   if (tasteProfile.topActress && tasteProfile.topActress.count >= 2) tasteParts.push(`tu suis ${tasteProfile.topActress.name} partout`);
-  if (tasteProfile.topScenariste) tasteParts.push(`la plume de ${tasteProfile.topScenariste.name} te réussit (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
-  tasteParts.push(`tu préfères les formats ${tasteProfile.formatLean}`);
-  const tasteSentence = tasteParts.length ? `Toi, en quelques mots : ${tasteParts.join(", ")}.` : null;
+  if (tasteProfile.topScenariste) tasteParts.push(aime `la plume de ${tasteProfile.topScenariste.name} (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
+  tasteParts.push(`préfères les formats ${tasteProfile.formatLean}`);
+  const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(", ")}.` : null;
 
   let html = `<div class="trends-wrap">
     ${tasteSentence ? `
