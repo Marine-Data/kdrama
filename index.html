@@ -691,6 +691,12 @@ function searchPosterOnline(titre) {
   window.open(`https://www.google.com/search?tbm=isch&q=${query}`, "_blank", "noopener");
 }
 
+function searchPersonPhotoOnline(nom) {
+  if (!nom || !nom.trim()) return;
+  const query = encodeURIComponent(`${nom} actor korean`);
+  window.open(`https://www.google.com/search?tbm=isch&q=${query}`, "_blank", "noopener");
+}
+
 function shareDrama(d) {
   const lines = [
     `🎬 ${d.titre}${d.annee ? ` (${d.annee})` : ""}`,
@@ -1079,11 +1085,11 @@ function renderTrendsView() {
 
   // Build a one-line personal taste sentence from available signals.
   const tasteParts = [];
-  if (tasteProfile.topActor && tasteProfile.topActor.count >= 2) tasteParts.push(`Adore ${tasteProfile.topActor.name}`);
-  if (tasteProfile.topActress && tasteProfile.topActress.count >= 2) tasteParts.push(`suis ${tasteProfile.topActress.name} partout`);
-  if (tasteProfile.topScenariste) tasteParts.push(`aime la plume de ${tasteProfile.topScenariste.name} (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
-  tasteParts.push(`préfère les formats ${tasteProfile.formatLean}`);
-  const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(", ")}.` : null;
+  if (tasteProfile.topActor && tasteProfile.topActor.count >= 2) tasteParts.push(`tu adores ${tasteProfile.topActor.name}`);
+  if (tasteProfile.topActress && tasteProfile.topActress.count >= 2) tasteParts.push(`tu suis ${tasteProfile.topActress.name} partout`);
+  if (tasteProfile.topScenariste) tasteParts.push(`la plume de ${tasteProfile.topScenariste.name} te réussit (${fmtNote(tasteProfile.topScenariste.avg_note)}/10 en moyenne)`);
+  tasteParts.push(`tu préfères les formats ${tasteProfile.formatLean}`);
+  const tasteSentence = tasteParts.length ? `Toi, en quelques mots : ${tasteParts.join(", ")}.` : null;
 
   let html = `<div class="trends-wrap">
     ${tasteSentence ? `
@@ -1371,6 +1377,7 @@ function renderPersonModal() {
               ? `<div class="poster-preview"><img src="${esc(photo)}"></div>`
               : `<label class="poster-dropzone">📷<span>${state.imageProcessing ? "Traitement…" : "Ajouter une photo"}</span><input type="file" accept="image/*" style="display:none" id="personPhotoInput"></label>`}
           </div>
+          ${!photo ? `<button type="button" class="text-btn" id="searchPersonPhotoBtn" data-search-name="${esc(profile.name)}" style="margin-top:4px;">🔍 Chercher une photo en ligne</button>` : ""}
         </div>
 
         <p class="modal-section-h">Ses titres</p>
@@ -1563,6 +1570,12 @@ function attachListeners() {
     personPhotoInput.addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
       if (file && state.personModal) uploadPersonPhoto(file, state.personModal.nom, state.personModal.role);
+    });
+  }
+  const searchPersonPhotoBtn = document.getElementById("searchPersonPhotoBtn");
+  if (searchPersonPhotoBtn) {
+    searchPersonPhotoBtn.addEventListener("click", () => {
+      searchPersonPhotoOnline(searchPersonPhotoBtn.dataset.searchName);
     });
   }
 
