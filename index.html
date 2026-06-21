@@ -682,6 +682,15 @@ async function saveDraft() {
   }
 }
 
+function searchPosterOnline(titre) {
+  if (!titre || !titre.trim()) {
+    showToast("Indique d'abord un titre.");
+    return;
+  }
+  const query = encodeURIComponent(`${titre} kdrama poster`);
+  window.open(`https://www.google.com/search?tbm=isch&q=${query}`, "_blank", "noopener");
+}
+
 function shareDrama(d) {
   const lines = [
     `🎬 ${d.titre}${d.annee ? ` (${d.annee})` : ""}`,
@@ -1263,6 +1272,7 @@ function renderAVoirFormSheet() {
               ? `<div class="poster-preview"><img src="${esc(d.poster_url)}"><button type="button" class="poster-remove" id="avoirPosterRemove">✕</button></div>`
               : `<label class="poster-dropzone">📷<span>${state.imageProcessing ? "Traitement…" : "Choisir une photo"}</span><input type="file" accept="image/*" style="display:none" id="avoirPosterInput"></label>`}
           </div>
+          ${!d.poster_url ? `<button type="button" class="text-btn" id="searchAVoirPosterBtn" style="margin-top:4px;">🔍 Chercher l'affiche en ligne</button>` : ""}
         </div>
         <label>Année<input id="av-annee" type="number" inputmode="numeric" value="${esc(d.annee)}"></label>
         <label>Acteur principal<input id="av-acteur" value="${esc(d.acteur)}"></label>
@@ -1300,6 +1310,7 @@ function renderFormSheet() {
               ? `<div class="poster-preview"><img src="${esc(d.poster_url)}"><button type="button" class="poster-remove" id="posterRemove">✕</button></div>`
               : `<label class="poster-dropzone">📷<span>${state.imageProcessing ? "Traitement…" : "Choisir une photo"}</span><input type="file" accept="image/*" style="display:none" id="posterInput"></label>`}
           </div>
+          ${!d.poster_url ? `<button type="button" class="text-btn" id="searchPosterBtn" style="margin-top:4px;">🔍 Chercher l'affiche en ligne</button>` : ""}
         </div>
         <div class="field-pair">
           <label>Année<input id="f-annee" type="number" inputmode="numeric" value="${esc(d.annee)}" placeholder="2024"></label>
@@ -1588,6 +1599,13 @@ function attachListeners() {
   if (posterInput) posterInput.addEventListener("change", (e) => handlePosterUpload(e.target.files && e.target.files[0]));
   const posterRemove = document.getElementById("posterRemove");
   if (posterRemove) posterRemove.addEventListener("click", removePoster);
+  const searchPosterBtn = document.getElementById("searchPosterBtn");
+  if (searchPosterBtn) {
+    searchPosterBtn.addEventListener("click", () => {
+      const titreInput = document.getElementById("f-titre");
+      searchPosterOnline(titreInput ? titreInput.value : state.draft.titre);
+    });
+  }
 
   // A voir (wishlist) view
   const surpriseMeBtn = document.getElementById("surpriseMeBtn");
@@ -1643,6 +1661,13 @@ function attachListeners() {
   if (avoirPosterInput) avoirPosterInput.addEventListener("change", (e) => handleAVoirPosterUpload(e.target.files && e.target.files[0]));
   const avoirPosterRemove = document.getElementById("avoirPosterRemove");
   if (avoirPosterRemove) avoirPosterRemove.addEventListener("click", removeAVoirPoster);
+  const searchAVoirPosterBtn = document.getElementById("searchAVoirPosterBtn");
+  if (searchAVoirPosterBtn) {
+    searchAVoirPosterBtn.addEventListener("click", () => {
+      const titreInput = document.getElementById("av-titre");
+      searchPosterOnline(titreInput ? titreInput.value : state.aVoirDraft.titre);
+    });
+  }
 }
 
 // ============== INIT ==============
