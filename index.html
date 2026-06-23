@@ -42,11 +42,24 @@
     padding: 26px 18px 14px; text-align: center; border-bottom: 1px solid var(--line);
     background: radial-gradient(circle at 50% 0%, var(--seal-soft) 0%, transparent 60%), var(--paper);
     position: sticky; top: 0; z-index: 30;
-    transition: padding-top 0.25s ease;
   }
+  /* padding-top n'est plus transitionné : passer de 26px à 10px en
+     interpolant force un recalcul de layout à chaque frame, ce qui
+     entre en concurrence avec le scroll en cours et cause le
+     tremblement signalé. Le changement est désormais instantané ; le
+     rendu reste fluide car app-header-brand/hero-stats (ci-dessous)
+     gèrent seuls l'impression de douceur via transform+opacity. */
   .app-header.scrolled { padding-top: 10px; }
-  .app-header-brand { overflow: hidden; max-height: 130px; transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease; }
-  .app-header.scrolled .app-header-brand { max-height: 0; opacity: 0; margin: 0; }
+  .app-header-brand {
+    overflow: hidden; max-height: 130px; transform-origin: top;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  /* max-height/margin changent de valeur sans transition (saut
+     instantané, un seul recalcul de layout) ; seuls transform et
+     opacity sont animés, des propriétés gérées par le compositeur
+     GPU qui ne déclenchent aucun recalcul de mise en page pendant le
+     scroll — c'est ce qui supprime le tremblement. */
+  .app-header.scrolled .app-header-brand { max-height: 0; margin: 0; opacity: 0; transform: scaleY(0); }
   .app-seal { width: 48px; height: 48px; margin: 0 auto 8px; color: var(--seal); }
   .app-seal svg circle { fill: none; stroke: currentColor; }
   .app-eyebrow { font-family: 'Noto Sans KR', sans-serif; font-weight: 700; font-size: 18px; color: var(--pink-deep); margin: 0 0 4px; letter-spacing: 0.03em; }
@@ -54,11 +67,11 @@
 
   .main-nav { display: flex; gap: 8px; padding: 14px 16px 0; }
   .main-nav-btn {
-    flex: 1; border: none; background: var(--paper-sunken);
+    flex: 1; border: 1.5px solid var(--line); background: var(--paper-raised);
     padding: 11px 8px; font-size: 13.5px; font-weight: 700; color: var(--ink-soft); cursor: pointer;
-    font-family: inherit; border-radius: 10px;
+    font-family: inherit; border-radius: 11px;
   }
-  .main-nav-btn.active { background: var(--blue-deep); color: #fff; }
+  .main-nav-btn.active { background: var(--blue-deep); border-color: var(--blue-deep); color: #fff; }
 
   .tabbar { display: flex; gap: 6px; padding: 14px 16px 0; }
   .tab-btn {
@@ -67,8 +80,12 @@
   }
   .tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
-  .hero-stats { display: flex; justify-content: center; gap: 36px; padding: 16px 16px 10px; flex-wrap: wrap; overflow: hidden; max-height: 70px; transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease; }
-  .app-header.scrolled .hero-stats { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 36px; padding: 16px 16px 10px; flex-wrap: wrap;
+    overflow: hidden; max-height: 70px; transform-origin: top;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .app-header.scrolled .hero-stats { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; transform: scaleY(0); }
   .hero-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .hero-stat .num { font-family: 'Press Start 2P', cursive; font-size: 17px; font-weight: 400; color: var(--gold); }
   .hero-stat .lbl { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -402,6 +419,30 @@
   .modal-stat { flex: 1; background: var(--paper-sunken); border-radius: 11px; padding: 9px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
   .modal-stat .v { font-family: 'Press Start 2P', cursive; font-size: 13px; font-weight: 400; color: var(--blue-deep); }
   .modal-stat .l { font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; }
+
+  /* ---------- Carte d'en-tête de fiche profil ----------
+     Remplace l'usage de .modal-header/.modal-avatar/.modal-stat sur
+     cette page : ces classes sont pensées pour une feuille étroite
+     (modal-sheet, max-width 480px) où justify-content:space-between
+     ne crée pas de grand vide. Sur la page profil, plus large, ce même
+     space-between écartait le nom et le bouton Suivre/Abonné(e) aux
+     deux extrémités — d'où une carte dédiée, avec tout regroupé. */
+  .profil-header-card { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 3px 3px 0 var(--paper-sunken); }
+  .profil-header-top { display: flex; align-items: center; gap: 13px; }
+  .profil-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); flex-shrink: 0; }
+  .profil-header-info { flex: 1; min-width: 0; }
+  .profil-pseudo { font-family: 'Press Start 2P', cursive; font-size: 14px; margin: 0; color: var(--blue-deep); }
+  .profil-bio { font-size: 12px; color: var(--ink-soft); margin: 4px 0 0; }
+  .profil-follow-btn {
+    flex-shrink: 0; white-space: nowrap; border: 1px solid var(--line); background: var(--paper-raised);
+    border-radius: 30px; padding: 7px 13px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft);
+    cursor: pointer; font-family: inherit;
+  }
+  .profil-follow-btn.is-following { background: var(--seal-soft); color: var(--pink-deep); border-color: var(--seal-soft); }
+  .profil-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .profil-stat { border-radius: 11px; padding: 10px 6px; text-align: center; }
+  .profil-stat .v { font-family: 'Press Start 2P', cursive; font-size: 13px; color: var(--blue-deep); display: block; }
+  .profil-stat .l { font-size: 9px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; display: block; margin-top: 3px; }
   .modal-section-h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); margin: 15px 0 7px; }
   .modal-title-row, .modal-collab-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; }
   .modal-collab-row { cursor: pointer; }
@@ -479,6 +520,14 @@
   .subnav { display:flex; gap:6px; padding:0 16px 14px; flex-wrap:wrap; }
   .subnav button { border:1px solid var(--line); background:var(--paper-raised); border-radius:3px; border-width:2px; padding:8px 12px; font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:inherit; }
   .subnav button.active { background:var(--celadon); color:#fff; border-color:var(--celadon); }
+  .subnav-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .subnav-grid button { border-radius:11px; border-width:1.5px; padding:9px 6px; font-size:12.5px; }
+  .jeu-card { display:flex; align-items:center; gap:12px; width:100%; text-align:left; border:1px solid var(--line); background:var(--paper-raised); border-radius:14px; padding:13px; cursor:pointer; font-family:inherit; }
+  .jeu-card-icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+  .jeu-card-info { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .jeu-card-titre { font-size:13.5px; font-weight:700; color:var(--ink); }
+  .jeu-card-sub { font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .jeu-card-chevron { color:var(--ink-faint); font-size:15px; flex-shrink:0; }
   .more-menu { position:relative; }
   .more-menu-panel { position:absolute; top:46px; right:16px; background:var(--paper-raised); border:2px solid var(--line); border-radius:3px; box-shadow:3px 3px 0 var(--line); z-index:40; min-width:160px; padding:6px; }
   .more-menu-panel button { display:block; width:100%; text-align:left; border:none; background:none; padding:9px 10px; font-size:13px; color:var(--ink); cursor:pointer; font-family:inherit; border-radius:3px; }
@@ -584,6 +633,7 @@ let state = {
   activitesAVoir: [],
   avisLikes: [],
   cadeauxLikes: [],
+  cadeauxComments: [],
   abonnements: [],
   // Les 20 derniers profils créés, utilisés pour afficher une carte
   // "X a rejoint le carnet" dans le fil communauté — sans ça, un
@@ -601,6 +651,13 @@ let state = {
   maCollectionActeurs: [],
   cadeauEnCours: null, // { personne: {id, nom, role, photo_url}, ouvert: bool }
   collectionModalOpen: false,
+  // Modale de commentaires sur une entrée "vu" ou "à voir" d'un profil
+  // (likes/commentaires des autres) : null tant que fermée, sinon
+  // { kind: "visionnage"|"a_voir", targetId, titre, ownerId, draft }.
+  entryCommentModal: null,
+  // Notifications "quelqu'un a aimé/commenté ton vu ou ton à voir",
+  // même principe que notifAbonnementsData / notifSuggestionsData.
+  notifInteractionsData: [],
   // Modale "Envies de mes abonnés" (piocher dans leur liste à voir) :
   // null tant que fermée, sinon tableau d'items {a_voir item, pseudo, avatar_url, user_id}.
   enviesAbonnesOpen: false,
@@ -636,6 +693,7 @@ let state = {
   composerCommentaire: "",
   profilPublicId: null,
   profilPublicData: null,
+  profilRetourTab: "communaute", // onglet vers lequel revenir avec le bouton ← Retour de la fiche profil
 
   // ---- Tierlists ----
   tierlists: [],
@@ -879,6 +937,7 @@ async function loadData() {
     loadOstLeaderboard(),
     chargerNotificationsSuggestions(),
     chargerNotificationsAbonnements(),
+    chargerNotificationsInteractions(),
     chargerMaCollectionActeurs(),
   ]);
 
@@ -1555,7 +1614,8 @@ function renderNotifSuggestionsModal() {
   if (!state.notifSuggestionsOpen) return "";
   const suggestions = (state.notifSuggestionsData || []).map((s) => ({ type: "suggestion", date: s.created_at, data: s }));
   const abonnements = (state.notifAbonnementsData || []).map((n) => ({ type: "abonnement", date: n.created_at, data: n }));
-  const items = [...suggestions, ...abonnements].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const interactions = (state.notifInteractionsData || []).map((n) => ({ type: "interaction", date: n.created_at, data: n }));
+  const items = [...suggestions, ...abonnements, ...interactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   return `<div class="modal-overlay" id="notifSuggestionsOverlay">
     <div class="modal-sheet" id="notifSuggestionsSheet">
       <div class="modal-handle"></div>
@@ -1565,6 +1625,28 @@ function renderNotifSuggestionsModal() {
       </div>
       <div class="modal-body">
         ${items.length === 0 ? `<p class="tr-note">Aucune notification pour l'instant.</p>` : items.map((item) => {
+          if (item.type === "interaction") {
+            const n = item.data;
+            const p = n.profil_auteur;
+            const pseudo = p ? p.pseudo : "Quelqu'un";
+            const lieu = n.target_kind === "visionnage" ? "un drama que tu as vu"
+              : n.target_kind === "a_voir" ? "une envie de ta liste à voir"
+              : n.target_kind === "tendances" ? "tes tendances"
+              : "ta sélection \"valeurs sûres\"";
+            const action = n.interaction_type === "like" ? "a aimé" : "a commenté";
+            return `<article class="drama-card" style="cursor:default; ${!n.vue ? "border-color:var(--seal);" : ""}">
+              <div class="card-row">
+                ${p && p.avatar_url
+                  ? `<img src="${esc(p.avatar_url)}" class="tr-person-avatar" style="width:48px;height:48px;object-fit:cover;cursor:pointer;" data-open-profil="${esc(n.from_user_id)}">`
+                  : `<div class="stamp mini motif-flower" style="width:48px;height:48px;cursor:pointer;" data-open-profil="${esc(n.from_user_id)}">${FLOWER_MOTIF_SVG}</div>`}
+                <div class="card-main">
+                  <h2>${n.interaction_type === "like" ? "♥" : "💬"} ${esc(n.titre || "")}</h2>
+                  <p class="cast"><b style="color:var(--blue-deep); cursor:pointer;" data-open-profil="${esc(n.from_user_id)}">${esc(pseudo)}</b> ${action} ${lieu}</p>
+                  ${n.contenu_apercu ? `<p class="cast" style="font-style:italic;">"${esc(n.contenu_apercu)}"</p>` : ""}
+                </div>
+              </div>
+            </article>`;
+          }
           if (item.type === "abonnement") {
             const n = item.data;
             const p = n.profil_follower;
@@ -1677,6 +1759,37 @@ function renderListeAbonnesModal() {
           <div class="tr-person-row" data-open-profil-liste="${esc(p.id)}">
             ${p.avatar_url ? `<img src="${esc(p.avatar_url)}" class="tr-person-avatar">` : `<span class="tr-rank motif-flower" style="width:24px;height:24px;">${FLOWER_MOTIF_SVG}</span>`}
             <div class="tr-person-info"><p class="tr-person-name">${esc(p.pseudo)}</p></div>
+          </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---- modale commentaires sur une entrée "vu" / "à voir" ----
+function renderEntryCommentModal() {
+  const m = state.entryCommentModal;
+  if (!m) return "";
+  const comments = m.comments || [];
+  return `<div class="modal-overlay" id="entryCommentOverlay">
+    <div class="modal-sheet" id="entryCommentSheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div style="flex:1;"><h3>${esc(m.titre)}</h3></div>
+        <button class="icon-btn" id="entryCommentClose">✕</button>
+      </div>
+      <div class="modal-body">
+        ${isLoggedIn() ? `
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <input id="entry-comment-input" value="${esc(m.draft)}" placeholder="Écrire un commentaire…" style="flex:1; border:1px solid var(--line); background:var(--paper-raised); border-radius:3px; border-width:2px; padding:10px 11px; font-size:14px; font-family:inherit;">
+          <button class="primary-btn" id="entryCommentSubmitBtn" style="flex:0 0 auto;">Publier</button>
+        </div>` : `<p class="tr-note">Connecte-toi pour commenter.</p>`}
+        ${m.loadingComments ? `<p class="tr-note">Chargement…</p>` : comments.length === 0 ? `<p class="tr-note">Aucun commentaire pour l'instant.</p>` : comments.map((c) => `
+          <div class="tr-person-row" style="cursor:default;">
+            ${c.profils && c.profils.avatar_url ? `<img src="${esc(c.profils.avatar_url)}" class="tr-person-avatar">` : `<span class="tr-rank">💬</span>`}
+            <div class="tr-person-info">
+              <p class="tr-person-name">${esc(c.profils ? c.profils.pseudo : "Quelqu'un")}</p>
+              <p class="tr-person-sub">${esc(c.contenu)}</p>
+            </div>
           </div>`).join("")}
       </div>
     </div>
@@ -1822,6 +1935,15 @@ async function loadCommunaute() {
     state.cadeauxLikes = [];
   }
 
+  // Compte des commentaires par cadeau
+  try {
+    const { data, error } = await sb.from("cadeau_comments").select("cadeau_id");
+    if (error) throw error;
+    state.cadeauxComments = data || [];
+  } catch (e) {
+    state.cadeauxComments = [];
+  }
+
   // Les 20 derniers inscrits, pour la carte "X a rejoint le carnet"
   // dans le fil — sans ça, un compte tout juste créé est invisible
   // (aucune activité encore) et impossible à trouver pour s'abonner.
@@ -1884,6 +2006,311 @@ function hasLikedCadeau(cadeauId) {
   const uid = currentUserId();
   if (!uid) return false;
   return (state.cadeauxLikes || []).some((l) => l.cadeau_id === cadeauId && l.user_id === uid);
+}
+function getCadeauCommentCount(cadeauId) {
+  return (state.cadeauxComments || []).filter((c) => c.cadeau_id === cadeauId).length;
+}
+
+// ---- Likes/commentaires sur les "vus" et "à voir" d'un profil ----
+// Scopés à state.profilPublicData (chargés par openProfilPublic), pas
+// globaux : on ne les affiche que sur la fiche profil consultée.
+function hasLikedVisionnage(visionnageId) {
+  const uid = currentUserId();
+  if (!uid || !state.profilPublicData) return false;
+  return (state.profilPublicData.likesVisionnageDuProfil || []).some((l) => l.visionnage_id === visionnageId && l.user_id === uid);
+}
+function getVisionnageLikeCount(visionnageId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.likesVisionnageDuProfil || []).filter((l) => l.visionnage_id === visionnageId).length;
+}
+function getVisionnageCommentCount(visionnageId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.commentsVisionnageDuProfil || []).filter((c) => c.visionnage_id === visionnageId).length;
+}
+function hasLikedAVoir(mesAVoirId) {
+  const uid = currentUserId();
+  if (!uid || !state.profilPublicData) return false;
+  return (state.profilPublicData.likesAVoirDuProfil || []).some((l) => l.mes_a_voir_id === mesAVoirId && l.user_id === uid);
+}
+function getAVoirLikeCount(mesAVoirId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.likesAVoirDuProfil || []).filter((l) => l.mes_a_voir_id === mesAVoirId).length;
+}
+function getAVoirCommentCount(mesAVoirId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.commentsAVoirDuProfil || []).filter((c) => c.mes_a_voir_id === mesAVoirId).length;
+}
+
+async function toggleLikeVisionnage(visionnageId, ownerId, titre) {
+  if (!isLoggedIn()) { showToast("Connecte-toi pour aimer."); return; }
+  const uid = currentUserId();
+  const d = state.profilPublicData;
+  if (!d) return;
+  try {
+    if (hasLikedVisionnage(visionnageId)) {
+      const { error } = await sb.from("mes_visionnages_likes").delete().eq("visionnage_id", visionnageId).eq("user_id", uid);
+      if (error) throw error;
+      d.likesVisionnageDuProfil = (d.likesVisionnageDuProfil || []).filter((l) => !(l.visionnage_id === visionnageId && l.user_id === uid));
+    } else {
+      const { error } = await sb.from("mes_visionnages_likes").insert([{ visionnage_id: visionnageId, user_id: uid }]);
+      if (error) throw error;
+      d.likesVisionnageDuProfil = [...(d.likesVisionnageDuProfil || []), { visionnage_id: visionnageId, user_id: uid }];
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: "visionnage", target_id: visionnageId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like visionnage", errNotif);
+      }
+    }
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast("Action impossible.");
+  }
+}
+
+async function toggleLikeAVoir(mesAVoirId, ownerId, titre) {
+  if (!isLoggedIn()) { showToast("Connecte-toi pour aimer."); return; }
+  const uid = currentUserId();
+  const d = state.profilPublicData;
+  if (!d) return;
+  try {
+    if (hasLikedAVoir(mesAVoirId)) {
+      const { error } = await sb.from("mes_a_voir_likes").delete().eq("mes_a_voir_id", mesAVoirId).eq("user_id", uid);
+      if (error) throw error;
+      d.likesAVoirDuProfil = (d.likesAVoirDuProfil || []).filter((l) => !(l.mes_a_voir_id === mesAVoirId && l.user_id === uid));
+    } else {
+      const { error } = await sb.from("mes_a_voir_likes").insert([{ mes_a_voir_id: mesAVoirId, user_id: uid }]);
+      if (error) throw error;
+      d.likesAVoirDuProfil = [...(d.likesAVoirDuProfil || []), { mes_a_voir_id: mesAVoirId, user_id: uid }];
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: "a_voir", target_id: mesAVoirId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like à voir", errNotif);
+      }
+    }
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast("Action impossible.");
+  }
+}
+
+// ---- Likes/commentaires sur la page "Tendances" d'un profil, prise
+// dans son ensemble (pas une ligne précise : la cible est profilId
+// lui-même, à la fois pour le like et pour to_user_id de la notif).
+function hasLikedTendances(profilId) {
+  const uid = currentUserId();
+  if (!uid || !state.profilPublicData) return false;
+  return (state.profilPublicData.likesTendancesDuProfil || []).some((l) => l.profil_id === profilId && l.user_id === uid);
+}
+function getTendancesLikeCount(profilId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.likesTendancesDuProfil || []).filter((l) => l.profil_id === profilId).length;
+}
+function getTendancesCommentCount(profilId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.commentsTendancesDuProfil || []).filter((c) => c.profil_id === profilId).length;
+}
+async function toggleLikeTendances(profilId, titre) {
+  if (!isLoggedIn()) { showToast("Connecte-toi pour aimer."); return; }
+  const uid = currentUserId();
+  const d = state.profilPublicData;
+  if (!d) return;
+  try {
+    if (hasLikedTendances(profilId)) {
+      const { error } = await sb.from("tendances_likes").delete().eq("profil_id", profilId).eq("user_id", uid);
+      if (error) throw error;
+      d.likesTendancesDuProfil = (d.likesTendancesDuProfil || []).filter((l) => !(l.profil_id === profilId && l.user_id === uid));
+    } else {
+      const { error } = await sb.from("tendances_likes").insert([{ profil_id: profilId, user_id: uid }]);
+      if (error) throw error;
+      d.likesTendancesDuProfil = [...(d.likesTendancesDuProfil || []), { profil_id: profilId, user_id: uid }];
+      if (profilId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: profilId, from_user_id: uid, interaction_type: "like", target_kind: "tendances", target_id: profilId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like tendances", errNotif);
+      }
+    }
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast("Action impossible.");
+  }
+}
+
+// ---- Likes/commentaires sur une personne (acteur/actrice/scénariste/
+// réalisateur) telle qu'elle apparaît dans "Les valeurs sûres" d'un
+// profil précis. Cible = (profilId, personneId), car la même personne
+// peut apparaître chez plusieurs profils avec une note différente.
+function hasLikedValeurSure(personneId) {
+  const uid = currentUserId();
+  if (!uid || !state.profilPublicData) return false;
+  return (state.profilPublicData.likesValeursSuresDuProfil || []).some((l) => l.personne_id === personneId && l.user_id === uid);
+}
+function getValeurSureLikeCount(personneId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.likesValeursSuresDuProfil || []).filter((l) => l.personne_id === personneId).length;
+}
+function getValeurSureCommentCount(personneId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.commentsValeursSuresDuProfil || []).filter((c) => c.personne_id === personneId).length;
+}
+async function toggleLikeValeurSure(profilId, personneId, titre) {
+  if (!isLoggedIn()) { showToast("Connecte-toi pour aimer."); return; }
+  const uid = currentUserId();
+  const d = state.profilPublicData;
+  if (!d) return;
+  try {
+    if (hasLikedValeurSure(personneId)) {
+      const { error } = await sb.from("valeurs_sures_likes").delete().eq("profil_id", profilId).eq("personne_id", personneId).eq("user_id", uid);
+      if (error) throw error;
+      d.likesValeursSuresDuProfil = (d.likesValeursSuresDuProfil || []).filter((l) => !(l.personne_id === personneId && l.user_id === uid));
+    } else {
+      const { error } = await sb.from("valeurs_sures_likes").insert([{ profil_id: profilId, personne_id: personneId, user_id: uid }]);
+      if (error) throw error;
+      d.likesValeursSuresDuProfil = [...(d.likesValeursSuresDuProfil || []), { profil_id: profilId, personne_id: personneId, user_id: uid }];
+      if (profilId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: profilId, from_user_id: uid, interaction_type: "like", target_kind: "valeurs_sures", target_id: personneId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like valeur sûre", errNotif);
+      }
+    }
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast("Action impossible.");
+  }
+}
+
+// ---- Likes/commentaires sur une partie de Quiz du jour ou d'OST
+// Challenge ("Jeux" sur une fiche profil). target_kind ('quiz'|'ost')
+// + target_id (scores_quiz.id ou scores_ost.id) identifient la partie.
+function hasLikedJeu(kind, targetId) {
+  const uid = currentUserId();
+  if (!uid || !state.profilPublicData) return false;
+  return (state.profilPublicData.likesJeuxDuProfil || []).some((l) => l.target_kind === kind && l.target_id === targetId && l.user_id === uid);
+}
+function getJeuLikeCount(kind, targetId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.likesJeuxDuProfil || []).filter((l) => l.target_kind === kind && l.target_id === targetId).length;
+}
+function getJeuCommentCount(kind, targetId) {
+  if (!state.profilPublicData) return 0;
+  return (state.profilPublicData.commentsJeuxDuProfil || []).filter((c) => c.target_kind === kind && c.target_id === targetId).length;
+}
+async function toggleLikeJeu(kind, targetId, ownerId, titre) {
+  if (!isLoggedIn()) { showToast("Connecte-toi pour aimer."); return; }
+  const uid = currentUserId();
+  const d = state.profilPublicData;
+  if (!d) return;
+  try {
+    if (hasLikedJeu(kind, targetId)) {
+      const { error } = await sb.from("jeux_likes").delete().eq("target_kind", kind).eq("target_id", targetId).eq("user_id", uid);
+      if (error) throw error;
+      d.likesJeuxDuProfil = (d.likesJeuxDuProfil || []).filter((l) => !(l.target_kind === kind && l.target_id === targetId && l.user_id === uid));
+    } else {
+      const { error } = await sb.from("jeux_likes").insert([{ target_kind: kind, target_id: targetId, user_id: uid }]);
+      if (error) throw error;
+      d.likesJeuxDuProfil = [...(d.likesJeuxDuProfil || []), { target_kind: kind, target_id: targetId, user_id: uid }];
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: kind, target_id: targetId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like jeu", errNotif);
+      }
+    }
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast("Action impossible.");
+  }
+}
+
+// ---- modale commentaires sur une entrée "vu" / "à voir" / "tendances"
+// / "valeurs sûres" / "cadeau" / "quiz" / "ost" ----
+// Les commentaires sont chargés à la demande à l'ouverture (pas
+// pré-stockés dans profilPublicData), pour que la même modale serve
+// aussi bien depuis une fiche profil que depuis le fil communauté
+// (ex. un cadeau gagné, qui n'a pas de "profilPublicData" parent).
+function ouvrirCommentairesEntry(kind, targetId, titre, ownerId) {
+  setState({ entryCommentModal: { kind, targetId, titre, ownerId, draft: "", comments: [], loadingComments: true } });
+  chargerCommentairesEntry(kind, targetId);
+}
+function commentTableEtColonne(kind) {
+  if (kind === "visionnage") return { table: "mes_visionnages_comments", col: "visionnage_id" };
+  if (kind === "a_voir") return { table: "mes_a_voir_comments", col: "mes_a_voir_id" };
+  if (kind === "tendances") return { table: "tendances_comments", col: "profil_id" };
+  if (kind === "valeurs_sures") return { table: "valeurs_sures_comments", col: "personne_id" };
+  if (kind === "cadeau") return { table: "cadeau_comments", col: "cadeau_id" };
+  return { table: "jeux_comments", col: "target_id" }; // "quiz" | "ost"
+}
+async function chargerCommentairesEntry(kind, targetId) {
+  const { table, col } = commentTableEtColonne(kind);
+  try {
+    let query = sb.from(table).select("*, profils(pseudo, avatar_url)").eq(col, targetId).order("created_at", { ascending: false });
+    if (kind === "quiz" || kind === "ost") query = query.eq("target_kind", kind);
+    const { data, error } = await query;
+    if (error) throw error;
+    if (state.entryCommentModal && state.entryCommentModal.kind === kind && state.entryCommentModal.targetId === targetId) {
+      setState({ entryCommentModal: { ...state.entryCommentModal, comments: data || [], loadingComments: false } });
+    }
+  } catch (e) {
+    console.error("Erreur chargement commentaires", e);
+    if (state.entryCommentModal) setState({ entryCommentModal: { ...state.entryCommentModal, comments: [], loadingComments: false } });
+  }
+}
+function fermerCommentairesEntry() {
+  setState({ entryCommentModal: null });
+}
+async function publierCommentaireEntry() {
+  const m = state.entryCommentModal;
+  if (!m) return;
+  if (!isLoggedIn()) { showToast("Connecte-toi pour commenter."); return; }
+  const texte = (m.draft || "").trim();
+  if (!texte) { showToast("Écris un commentaire avant de publier."); return; }
+  const uid = currentUserId();
+  const { table } = commentTableEtColonne(m.kind);
+  // "valeurs_sures" a besoin de DEUX colonnes (profil_id + personne_id) ;
+  // "quiz"/"ost" ont besoin de target_kind EN PLUS de target_id (même
+  // table jeux_comments pour les deux, distingués par target_kind).
+  const insertObj = m.kind === "visionnage" ? { visionnage_id: m.targetId, user_id: uid, contenu: texte }
+    : m.kind === "a_voir" ? { mes_a_voir_id: m.targetId, user_id: uid, contenu: texte }
+    : m.kind === "tendances" ? { profil_id: m.targetId, user_id: uid, contenu: texte }
+    : m.kind === "valeurs_sures" ? { profil_id: m.ownerId, personne_id: m.targetId, user_id: uid, contenu: texte }
+    : m.kind === "cadeau" ? { cadeau_id: m.targetId, user_id: uid, contenu: texte }
+    : { target_kind: m.kind, target_id: m.targetId, user_id: uid, contenu: texte }; // quiz/ost
+  try {
+    const { data, error } = await sb.from(table).insert([insertObj]).select("*, profils(pseudo, avatar_url)").single();
+    if (error) throw error;
+    setState({ entryCommentModal: { ...m, draft: "", comments: [data, ...(m.comments || [])] } });
+    // Garde aussi à jour les compteurs affichés ailleurs (badge 💬 sur
+    // la carte du fil ou sur la fiche profil), sans attendre un rechargement.
+    if (m.kind === "cadeau") {
+      state.cadeauxComments = [...(state.cadeauxComments || []), data];
+    } else if (m.kind === "quiz" || m.kind === "ost") {
+      const d = state.profilPublicData;
+      if (d) d.commentsJeuxDuProfil = [data, ...(d.commentsJeuxDuProfil || [])];
+    } else {
+      const d = state.profilPublicData;
+      if (d) {
+        const listKey = m.kind === "visionnage" ? "commentsVisionnageDuProfil" : m.kind === "a_voir" ? "commentsAVoirDuProfil" : m.kind === "tendances" ? "commentsTendancesDuProfil" : "commentsValeursSuresDuProfil";
+        d[listKey] = [data, ...(d[listKey] || [])];
+      }
+    }
+    if (m.ownerId && m.ownerId !== uid) {
+      const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+        to_user_id: m.ownerId, from_user_id: uid, interaction_type: "comment", target_kind: m.kind, target_id: m.targetId, titre: m.titre, contenu_apercu: texte.slice(0, 80),
+      }]);
+      if (errNotif) console.error("Erreur notification commentaire", errNotif);
+    }
+  } catch (e) {
+    console.error(e);
+    showToast("Publication impossible.");
+  }
 }
 
 function isFollowing(profilId) {
@@ -2201,10 +2628,40 @@ async function chargerNotificationsAbonnements() {
     state.notifAbonnementsData = [];
   }
 }
+
+// Charge les notifications "quelqu'un a aimé/commenté ton vu ou ton à
+// voir" reçues (où je suis to_user_id), même principe que les deux
+// fonctions précédentes (jointure profils faite à la main côté client).
+async function chargerNotificationsInteractions() {
+  if (!isLoggedIn()) { state.notifInteractionsData = []; return; }
+  try {
+    const { data, error } = await sb
+      .from("notifications_interactions")
+      .select("*")
+      .eq("to_user_id", currentUserId())
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    const notifs = data || [];
+
+    const fromIds = [...new Set(notifs.map((n) => n.from_user_id))];
+    let profilsParId = {};
+    if (fromIds.length > 0) {
+      const { data: profils, error: e2 } = await sb.from("profils").select("id, pseudo, avatar_url").in("id", fromIds);
+      if (e2) throw e2;
+      (profils || []).forEach((p) => { profilsParId[p.id] = p; });
+    }
+
+    state.notifInteractionsData = notifs.map((n) => ({ ...n, profil_auteur: profilsParId[n.from_user_id] || null }));
+  } catch (e) {
+    console.error("Erreur chargement notifications interactions", e);
+    state.notifInteractionsData = [];
+  }
+}
 // Nombre total de notifications non lues, suggestions + nouveaux
-// abonnés confondus (cloche unique — voir le choix produit).
+// abonnés + interactions (likes/commentaires sur vus/à voir) confondus
+// (cloche unique — voir le choix produit).
 function getNotificationsNonLues() {
-  return getSuggestionsNonLues() + (state.notifAbonnementsData || []).filter((n) => !n.vue).length;
+  return getSuggestionsNonLues() + (state.notifAbonnementsData || []).filter((n) => !n.vue).length + (state.notifInteractionsData || []).filter((n) => !n.vue).length;
 }
 // Marque les notifications "nouvel abonné" comme vues (même logique
 // que marquerSuggestionsVues, appelée en plus à l'ouverture de la cloche).
@@ -2218,6 +2675,19 @@ async function marquerAbonnementsVus() {
     render();
   } catch (e) {
     console.error("Erreur marquage abonnements vus", e);
+  }
+}
+// Marque les notifications de likes/commentaires sur vus/à voir comme vues.
+async function marquerInteractionsVues() {
+  const idsNonLues = (state.notifInteractionsData || []).filter((n) => !n.vue).map((n) => n.id);
+  if (idsNonLues.length === 0) return;
+  try {
+    const { error } = await sb.from("notifications_interactions").update({ vue: true }).in("id", idsNonLues);
+    if (error) throw error;
+    state.notifInteractionsData = state.notifInteractionsData.map((n) => idsNonLues.includes(n.id) ? { ...n, vue: true } : n);
+    render();
+  } catch (e) {
+    console.error("Erreur marquage interactions vues", e);
   }
 }
 async function ouvrirNotifSuggestions() {
@@ -2370,7 +2840,7 @@ async function supprimerAvis(avisId) {
   }
 }
 
-async function toggleLikeAvis(avisId) {
+async function toggleLikeAvis(avisId, ownerId, titre) {
   if (!isLoggedIn()) { showToast("Connecte-toi pour aimer un avis."); return; }
   const uid = currentUserId();
   try {
@@ -2380,6 +2850,12 @@ async function toggleLikeAvis(avisId) {
     } else {
       const { error } = await sb.from("avis_likes").insert([{ avis_id: avisId, user_id: uid }]);
       if (error) throw error;
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: "avis", target_id: avisId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like avis", errNotif);
+      }
     }
     await loadCommunaute();
     render();
@@ -2390,7 +2866,7 @@ async function toggleLikeAvis(avisId) {
 }
 
 // ---- Likes pour les cadeaux ----
-async function toggleLikeCadeau(cadeauId) {
+async function toggleLikeCadeau(cadeauId, ownerId, titre) {
   if (!isLoggedIn()) { showToast("Connecte-toi pour aimer un cadeau."); return; }
   const uid = currentUserId();
   try {
@@ -2400,6 +2876,12 @@ async function toggleLikeCadeau(cadeauId) {
     } else {
       const { error } = await sb.from("cadeau_likes").insert([{ cadeau_id: cadeauId, user_id: uid }]);
       if (error) throw error;
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: "cadeau", target_id: cadeauId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like cadeau", errNotif);
+      }
     }
     await loadCommunaute();
     render();
@@ -2440,7 +2922,13 @@ async function toggleFollow(profilId) {
 
 // ---- profil public ----
 async function openProfilPublic(profilId) {
-  setState({ profilPublicId: profilId, profilPublicData: null, activeTab: "profil" });
+  // Mémorise d'où on vient pour pouvoir y revenir avec le bouton
+  // retour (voir renderProfilPublicView()). Si on est déjà sur une
+  // fiche profil (cas d'un clic en chaîne profil -> profil -> profil),
+  // on garde le point d'entrée d'origine plutôt que d'empiler des
+  // fiches : "retour" doit ramener au contenu, pas à la fiche précédente.
+  const retourTab = state.activeTab === "profil" ? state.profilRetourTab : state.activeTab;
+  setState({ profilPublicId: profilId, profilPublicData: null, activeTab: "profil", profilRetourTab: retourTab });
   try {
     const { data: profil, error: e1 } = await sb.from("profils").select("*").eq("id", profilId).single();
     if (e1) throw e1;
@@ -2455,6 +2943,10 @@ async function openProfilPublic(profilId) {
 
     // Ses dramas vus (jointure visionnages + catalogue, même format
     // que state.mesEntries pour pouvoir réutiliser computeTrends/getStats).
+    // On garde aussi `visionnage_id` (l'id de la ligne mes_visionnages
+    // elle-même) à part de `id` (celui du drama, écrasé par le spread) :
+    // c'est lui qui identifie un like/commentaire précis sur CETTE
+    // personne ayant vu CE drama, pas le drama en général.
     const { data: visionnagesData, error: e3 } = await sb
       .from("mes_visionnages")
       .select("*, dramas(*)")
@@ -2462,23 +2954,113 @@ async function openProfilPublic(profilId) {
     if (e3) throw e3;
     const entriesDuProfil = enrichirDramasAvecPersonnes((visionnagesData || [])
       .filter((v) => v.dramas)
-      .map((v) => ({ ...v.dramas, note: v.note, date_visionnage: v.date_visionnage })));
+      .map((v) => ({ ...v.dramas, note: v.note, date_visionnage: v.date_visionnage, visionnage_id: v.id })));
 
-    // Sa liste à voir (jointure mes_a_voir + catalogue a_voir).
+    // Sa liste à voir (jointure mes_a_voir + catalogue a_voir). Même
+    // logique : `mes_a_voir_id` est conservé à part de `id` (celui du
+    // catalogue a_voir) pour identifier précisément CETTE envie-là.
     const { data: aVoirData, error: e4 } = await sb
       .from("mes_a_voir")
       .select("*, a_voir(*)")
       .eq("user_id", profilId);
     if (e4) throw e4;
-    const aVoirDuProfil = (aVoirData || []).filter((m) => m.a_voir).map((m) => m.a_voir);
+    const aVoirDuProfil = (aVoirData || []).filter((m) => m.a_voir).map((m) => ({ ...m.a_voir, mes_a_voir_id: m.id }));
+
+    // Likes + commentaires sur ses "vus" et son "à voir" — scopés aux
+    // ids de CE profil pour rester légers (pas un chargement global).
+    const visionnageIds = (visionnagesData || []).map((v) => v.id);
+    const mesAVoirIds = (aVoirData || []).map((m) => m.id);
+    let likesVisionnageDuProfil = [];
+    let commentsVisionnageDuProfil = [];
+    let likesAVoirDuProfil = [];
+    let commentsAVoirDuProfil = [];
+    if (visionnageIds.length > 0) {
+      const { data: lv } = await sb.from("mes_visionnages_likes").select("*").in("visionnage_id", visionnageIds);
+      likesVisionnageDuProfil = lv || [];
+      const { data: cv } = await sb.from("mes_visionnages_comments").select("*, profils(pseudo, avatar_url)").in("visionnage_id", visionnageIds).order("created_at", { ascending: false });
+      commentsVisionnageDuProfil = cv || [];
+    }
+    if (mesAVoirIds.length > 0) {
+      const { data: lav } = await sb.from("mes_a_voir_likes").select("*").in("mes_a_voir_id", mesAVoirIds);
+      likesAVoirDuProfil = lav || [];
+      const { data: cav } = await sb.from("mes_a_voir_comments").select("*, profils(pseudo, avatar_url)").in("mes_a_voir_id", mesAVoirIds).order("created_at", { ascending: false });
+      commentsAVoirDuProfil = cav || [];
+    }
+
+    // Likes + commentaires sur sa page "Tendances" dans son ensemble
+    // (pas une ligne précise, donc identifiés par profilId lui-même).
+    const { data: ltd } = await sb.from("tendances_likes").select("*").eq("profil_id", profilId);
+    const likesTendancesDuProfil = ltd || [];
+    const { data: ctd } = await sb.from("tendances_comments").select("*, profils(pseudo, avatar_url)").eq("profil_id", profilId).order("created_at", { ascending: false });
+    const commentsTendancesDuProfil = ctd || [];
+
+    // Likes + commentaires sur les personnes de SES "valeurs sûres"
+    // (identifiés par le couple profil_id + personne_id, car la même
+    // personne peut apparaître chez plusieurs profils avec une note
+    // différente — voir renderTrendsSections()).
+    const { data: lvs } = await sb.from("valeurs_sures_likes").select("*").eq("profil_id", profilId);
+    const likesValeursSuresDuProfil = lvs || [];
+    const { data: cvs } = await sb.from("valeurs_sures_comments").select("*, profils(pseudo, avatar_url)").eq("profil_id", profilId).order("created_at", { ascending: false });
+    const commentsValeursSuresDuProfil = cvs || [];
+
+    // Sa collection de cadeaux (acteurs gagnés en terminant une
+    // tierlist ou un quiz) — visible par tout le monde, même principe
+    // que "Ma collection" mais pour le profil consulté.
+    const { data: collectionData, error: e5 } = await sb
+      .from("collection_acteurs")
+      .select("*, personnes(id, nom, role, photo_url)")
+      .eq("user_id", profilId)
+      .order("created_at", { ascending: false });
+    if (e5) throw e5;
+    const collectionDuProfil = (collectionData || []).filter((c) => c.personnes);
+
+    // Son historique de quiz (scores déjà publics par ailleurs via le
+    // classement — voir loadLeaderboardQuiz()).
+    const { data: quizData, error: e6 } = await sb
+      .from("scores_quiz")
+      .select("*")
+      .eq("user_id", profilId)
+      .order("date_quiz", { ascending: false });
+    if (e6) throw e6;
+    const quizDuProfil = quizData || [];
+
+    // Son historique OST Challenge (même principe, classement déjà
+    // public via loadOstLeaderboard()).
+    const { data: ostData, error: e7 } = await sb
+      .from("scores_ost")
+      .select("*")
+      .eq("user_id", profilId)
+      .order("date_partie", { ascending: false });
+    if (e7) throw e7;
+    const ostDuProfil = ostData || [];
+
+    // Likes + commentaires sur ses parties Quiz/OST (regroupées sous
+    // l'onglet "Jeux" — voir renderProfilPublicView()). Une seule paire
+    // de tables génériques (target_kind 'quiz'|'ost'), donc une seule
+    // requête par sens plutôt qu'une par jeu.
+    const idsQuiz = quizDuProfil.map((q) => q.id);
+    const idsOst = ostDuProfil.map((o) => o.id);
+    const idsJeux = [...idsQuiz, ...idsOst];
+    let likesJeuxDuProfil = [];
+    let commentsJeuxDuProfil = [];
+    if (idsJeux.length > 0) {
+      const { data: lj } = await sb.from("jeux_likes").select("*").in("target_id", idsJeux);
+      likesJeuxDuProfil = lj || [];
+      const { data: cj } = await sb.from("jeux_comments").select("*, profils(pseudo, avatar_url)").in("target_id", idsJeux).order("created_at", { ascending: false });
+      commentsJeuxDuProfil = cj || [];
+    }
 
     const trendsDuProfil = computeTrends(entriesDuProfil);
 
     setState({
       profilPublicData: {
         profil, avisDuProfil, tierlistsDuProfil: tierlistsDuProfil || [],
-        entriesDuProfil, aVoirDuProfil, trendsDuProfil,
-        profilSubTab: "vus", // "vus" | "a-voir" | "tendances" | "avis" | "tierlists"
+        entriesDuProfil, aVoirDuProfil, trendsDuProfil, collectionDuProfil, quizDuProfil, ostDuProfil,
+        likesVisionnageDuProfil, commentsVisionnageDuProfil, likesAVoirDuProfil, commentsAVoirDuProfil,
+        likesTendancesDuProfil, commentsTendancesDuProfil,
+        likesValeursSuresDuProfil, commentsValeursSuresDuProfil,
+        likesJeuxDuProfil, commentsJeuxDuProfil,
+        profilSubTab: "vus", // "vus" | "a-voir" | "tendances" | "avis" | "tierlists" | "cadeaux" | "jeux"
       },
     });
   } catch (e) {
@@ -2498,10 +3080,13 @@ function getFeedEntries() {
   const activitesTierlist = (state.tierlists || [])
     .filter((t) => t.est_publique)
     .map((t) => ({ type: "tierlist", date: t.created_at, data: t }));
-  const activitesInscription = (state.nouveauxInscrits || []).map((p) => ({ type: "inscription", date: p.created_at, data: p }));
   const activitesCadeaux = (state.activitesCadeaux || []).map((c) => ({ type: "cadeau", date: c.created_at, data: c }));
 
-  return [...activitesAvis, ...activitesAVoir, ...activitesTierlist, ...activitesInscription, ...activitesCadeaux].sort((x, y) => new Date(y.date) - new Date(x.date));
+  // Les cartes "X a rejoint le carnet" sont désormais affichées dans
+  // l'onglet "Abonnements" plutôt que dans le Fil d'actualité — leur
+  // seule action possible (Suivre) les rattache au réseau social, pas
+  // au flux de contenu — voir renderAbonnementsView().
+  return [...activitesAvis, ...activitesAVoir, ...activitesTierlist, ...activitesCadeaux].sort((x, y) => new Date(y.date) - new Date(x.date));
 }
 
 function activiteCardHtml(entry) {
@@ -2532,7 +3117,7 @@ function avisCardHtml(a) {
     </div>
     ${a.commentaire ? `<p style="font-size:13px; color:var(--ink); line-height:1.5; margin:10px 0 0;">${esc(a.commentaire)}</p>` : ""}
     <div class="card-actions" style="margin-top:10px;">
-      <button class="text-btn" data-toggle-like="${esc(a.id)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">
+      <button class="text-btn" data-toggle-like="${esc(a.id)}" data-owner-id="${esc(a.user_id)}" data-titre="${esc(drama.titre || "un drama")}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">
         ${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}
       </button>
       ${mine ? `<button class="text-btn danger" data-delete-avis="${esc(a.id)}">🗑 Supprimer</button>` : ""}
@@ -2616,6 +3201,7 @@ function cadeauActiviteCardHtml(c) {
   const p = c.personnes;
   const liked = hasLikedCadeau(c.id);
   const likeCount = getLikeCadeauCount(c.id);
+  const commentCount = getCadeauCommentCount(c.id);
   return `<article class="drama-card" style="cursor:default;">
     <div class="card-row" style="align-items:flex-start;">
       <img src="${esc(p.photo_url)}" class="tr-person-avatar" style="width:56px;height:56px;object-fit:cover; cursor:pointer;" data-person-name="${esc(p.nom)}" data-person-role="${esc(p.role)}">
@@ -2626,9 +3212,10 @@ function cadeauActiviteCardHtml(c) {
       <span class="tr-rank">🏆</span>
     </div>
     <div class="card-actions" style="margin-top:10px;">
-      <button class="text-btn" data-toggle-like-cadeau="${esc(c.id)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">
+      <button class="text-btn" data-toggle-like-cadeau="${esc(c.id)}" data-owner-id="${esc(c.user_id)}" data-titre="${esc(p.nom)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">
         ${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}
       </button>
+      <button class="text-btn" data-open-comments-cadeau="${esc(c.id)}" data-owner-id="${esc(c.user_id)}" data-titre="${esc(p.nom)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
     </div>
   </article>`;
 }
@@ -2642,15 +3229,7 @@ function renderCommunauteView() {
   }
 
   const entries = getFeedEntries();
-  let html = `
-  <div style="padding:14px 16px 0; display:flex; gap:8px;">
-    <button class="ghost-btn" id="ouvrirEnviesAbonnesBtn" style="flex:1;">🎁 Envies de mes abonnements</button>
-    <button class="ghost-btn" id="ouvrirRechercheProfilBtn" style="flex:0 0 auto; padding:10px 14px;">🔍</button>
-  </div>
-  <div style="padding:8px 16px 0;">
-    <button class="ghost-btn" id="ouvrirCollectionBtn" style="width:100%;">🏆 Ma collection (${(state.maCollectionActeurs || []).length})</button>
-  </div>
-  <main class="kt-list">`;
+  let html = `<main class="kt-list" style="padding-top:14px;">`;
 
   if (entries.length === 0) {
     html += `<div class="empty-state"><p>Aucune activité pour l'instant.</p></div>`;
@@ -2661,10 +3240,72 @@ function renderCommunauteView() {
   return html;
 }
 
+// ---- onglet "Abonnements" : tout ce qui touche au réseau social,
+// auparavant éparpillé en boutons en haut du Fil (regroupé ici pour
+// plus de clarté — voir la refonte de la navigation Communauté).
+function renderAbonnementsView() {
+  if (!isLoggedIn()) {
+    return `<div class="trends-wrap"><div class="empty-state">
+      <p>Connecte-toi pour gérer tes abonnements et découvrir d'autres fans.</p>
+      <button class="primary-btn" id="goToAuthFromAbonnementsBtn" style="margin-top:6px;">Se connecter / S'inscrire</button>
+    </div></div>`;
+  }
+  const uid = currentUserId();
+  const nouveaux = (state.nouveauxInscrits || []).filter((p) => p.id !== uid);
+  return `<div class="trends-wrap">
+    <section class="tr-section">
+      <div class="modal-stat-row" style="margin:0 0 14px;">
+        <div class="modal-stat" style="cursor:pointer;" data-voir-liste-abonnes="${esc(uid)}:abonnes"><span class="v">${getFollowerCount(uid)}</span><span class="l">Abonnés</span></div>
+        <div class="modal-stat" style="cursor:pointer;" data-voir-liste-abonnes="${esc(uid)}:abonnements"><span class="v">${getFollowingCount(uid)}</span><span class="l">Abonnements</span></div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="ghost-btn" id="ouvrirEnviesAbonnesBtn" style="width:100%;">🎁 Envies de mes abonnements</button>
+        <button class="ghost-btn" id="ouvrirRechercheProfilBtn" style="width:100%;">🔍 Rechercher un profil</button>
+      </div>
+    </section>
+    <section class="tr-section">
+      <h2 class="tr-title">Nouveaux membres</h2>
+      ${nouveaux.length === 0 ? `<p class="tr-note">Personne de nouveau pour l'instant.</p>` : nouveaux.map(inscriptionActiviteCardHtml).join("")}
+    </section>
+  </div>`;
+}
+
+// ---- onglet "Jeux" : page d'accueil regroupant Quiz du jour, OST
+// Challenge et Tierlists (auparavant 3 boutons distincts du subnav
+// Communauté, plus "Deezer" qui est désormais retiré — voir le
+// mini-lecteur flottant persistant qui couvre déjà cet usage).
+function renderJeuxView() {
+  const nbCadeaux = (state.maCollectionActeurs || []).length;
+  return `<div class="trends-wrap">
+    <section class="tr-section" style="display:flex; flex-direction:column; gap:9px;">
+      <button class="jeu-card" data-tab="quiz">
+        <span class="jeu-card-icon" style="background:var(--celadon-soft);">🧠</span>
+        <span class="jeu-card-info"><span class="jeu-card-titre">Quiz du jour</span><span class="jeu-card-sub">Un nouveau défi chaque jour</span></span>
+        <span class="jeu-card-chevron">›</span>
+      </button>
+      <button class="jeu-card" data-tab="ost">
+        <span class="jeu-card-icon" style="background:var(--gold-soft);">🎵</span>
+        <span class="jeu-card-info"><span class="jeu-card-titre">OST Challenge</span><span class="jeu-card-sub">Reconnais la bande-son</span></span>
+        <span class="jeu-card-chevron">›</span>
+      </button>
+      <button class="jeu-card" data-tab="tierlists">
+        <span class="jeu-card-icon" style="background:var(--seal-soft);">▦</span>
+        <span class="jeu-card-info"><span class="jeu-card-titre">Tierlists</span><span class="jeu-card-sub">Classe tes acteurs préférés</span></span>
+        <span class="jeu-card-chevron">›</span>
+      </button>
+      ${isLoggedIn() ? `<button class="jeu-card" id="ouvrirCollectionBtn">
+        <span class="jeu-card-icon" style="background:var(--paper-sunken);">🏆</span>
+        <span class="jeu-card-info"><span class="jeu-card-titre">Ma collection</span><span class="jeu-card-sub">${nbCadeaux} acteur${nbCadeaux === 1 ? "" : "s"} gagné${nbCadeaux === 1 ? "" : "s"}</span></span>
+        <span class="jeu-card-chevron">›</span>
+      </button>` : ""}
+    </section>
+  </div>`;
+}
+
 function renderProfilPublicView() {
   const d = state.profilPublicData;
   if (!d) return `<div class="trends-wrap"><div class="empty-state"><p>Chargement du profil…</p></div></div>`;
-  const { profil, avisDuProfil, tierlistsDuProfil, entriesDuProfil, aVoirDuProfil, trendsDuProfil, profilSubTab } = d;
+  const { profil, avisDuProfil, tierlistsDuProfil, entriesDuProfil, aVoirDuProfil, trendsDuProfil, collectionDuProfil, quizDuProfil, ostDuProfil, profilSubTab } = d;
   const isMe = profil.id === currentUserId();
   const ratedEntries = entriesDuProfil.filter((e) => e.note !== null && e.note !== undefined);
   const note_avg = ratedEntries.length ? ratedEntries.reduce((s, e) => s + Number(e.note), 0) / ratedEntries.length : null;
@@ -2676,43 +3317,58 @@ function renderProfilPublicView() {
     <button class="${subTab === "tendances" ? "active" : ""}" data-profil-subtab="tendances">Tendances</button>
     <button class="${subTab === "avis" ? "active" : ""}" data-profil-subtab="avis">Avis (${avisDuProfil.length})</button>
     <button class="${subTab === "tierlists" ? "active" : ""}" data-profil-subtab="tierlists">Tierlists</button>
+    <button class="${subTab === "cadeaux" ? "active" : ""}" data-profil-subtab="cadeaux">🎁 Cadeaux (${collectionDuProfil.length})</button>
+    <button class="${subTab === "jeux" ? "active" : ""}" data-profil-subtab="jeux">Jeux (${quizDuProfil.length + ostDuProfil.length})</button>
   </div>`;
 
   let contentHtml = "";
   if (subTab === "vus") {
     contentHtml = entriesDuProfil.length === 0 ? `<p class="tr-note">Aucun drama vu pour l'instant.</p>` : entriesDuProfil
       .slice().sort((a, b) => (b.note || 0) - (a.note || 0))
-      .map((dr) => `
-        <div class="tr-person-row" data-drama-titre="${esc(dr.titre)}">
+      .map((dr) => {
+        const liked = hasLikedVisionnage(dr.visionnage_id);
+        const likeCount = getVisionnageLikeCount(dr.visionnage_id);
+        const commentCount = getVisionnageCommentCount(dr.visionnage_id);
+        return `<div style="margin-bottom:9px;">
+          <div class="tr-person-row" data-drama-titre="${esc(dr.titre)}" style="margin-bottom:0; border-radius:12px 12px 0 0;">
+            ${dr.poster_url ? `<img src="${esc(dr.poster_url)}" class="tr-person-avatar">` : `<span class="tr-rank motif-flower" style="width:24px;height:24px;">${FLOWER_MOTIF_SVG}</span>`}
+            <div class="tr-person-info"><p class="tr-person-name">${esc(dr.titre)}</p><p class="tr-person-sub">${esc(dr.annee || "")}</p></div>
+            <span class="tr-person-score">${fmtNote(dr.note)}</span>
+          </div>
+          <div class="card-actions" style="background:var(--paper-raised); border:1px solid var(--line); border-top:none; border-radius:0 0 12px 12px; padding:8px 14px; margin-top:-1px;">
+            <button class="text-btn" data-toggle-like-visionnage="${esc(dr.visionnage_id)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(dr.titre)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+            <button class="text-btn" data-open-comments-visionnage="${esc(dr.visionnage_id)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(dr.titre)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
+          </div>
+        </div>`;
+      }).join("");
+  } else if (subTab === "a-voir") {
+    contentHtml = aVoirDuProfil.length === 0 ? `<p class="tr-note">Aucune envie enregistrée.</p>` : aVoirDuProfil.map((dr) => {
+      const liked = hasLikedAVoir(dr.mes_a_voir_id);
+      const likeCount = getAVoirLikeCount(dr.mes_a_voir_id);
+      const commentCount = getAVoirCommentCount(dr.mes_a_voir_id);
+      return `<div style="margin-bottom:9px;">
+        <div class="tr-person-row" data-drama-titre="${esc(dr.titre)}" style="margin-bottom:0; border-radius:12px 12px 0 0;">
           ${dr.poster_url ? `<img src="${esc(dr.poster_url)}" class="tr-person-avatar">` : `<span class="tr-rank motif-flower" style="width:24px;height:24px;">${FLOWER_MOTIF_SVG}</span>`}
           <div class="tr-person-info"><p class="tr-person-name">${esc(dr.titre)}</p><p class="tr-person-sub">${esc(dr.annee || "")}</p></div>
-          <span class="tr-person-score">${fmtNote(dr.note)}</span>
-        </div>`).join("");
-  } else if (subTab === "a-voir") {
-    contentHtml = aVoirDuProfil.length === 0 ? `<p class="tr-note">Aucune envie enregistrée.</p>` : aVoirDuProfil.map((dr) => `
-      <div class="tr-person-row" data-drama-titre="${esc(dr.titre)}">
-        ${dr.poster_url ? `<img src="${esc(dr.poster_url)}" class="tr-person-avatar">` : `<span class="tr-rank motif-flower" style="width:24px;height:24px;">${FLOWER_MOTIF_SVG}</span>`}
-        <div class="tr-person-info"><p class="tr-person-name">${esc(dr.titre)}</p><p class="tr-person-sub">${esc(dr.annee || "")}</p></div>
-      </div>`).join("");
-  } else if (subTab === "tendances") {
-    if (!trendsDuProfil || !trendsDuProfil.records) {
-      contentHtml = `<p class="tr-note">Pas encore assez de dramas notés pour calculer des tendances.</p>`;
-    } else {
-      const t = trendsDuProfil;
-      contentHtml = `
-        <div class="tr-records-grid">
-          <div class="tr-record" data-drama-titre="${esc(t.records.best?.titre)}"><p class="tr-rk-label">Mieux noté</p><p class="tr-rk-title">${esc(t.records.best?.titre)}</p><p class="tr-rk-meta">${fmtNote(t.records.best?.note)}/10</p></div>
-          <div class="tr-record" data-drama-titre="${esc(t.records.worst?.titre)}"><p class="tr-rk-label">Moins bien noté</p><p class="tr-rk-title">${esc(t.records.worst?.titre)}</p><p class="tr-rk-meta">${fmtNote(t.records.worst?.note)}/10</p></div>
         </div>
-        <div class="tr-insight" style="margin-top:11px;">${t.coupsDeCoeur} coups de cœur (≥9) · ${t.deceptions} déceptions (≤4) · note moyenne ${fmtNote(t.avgNote)}/10</div>
-        <p class="tr-subhead">Acteurs/actrices récurrents</p>
-        ${t.peopleProfiles.filter((p) => p.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5).map((p) => `
-          <div class="tr-person-row" data-person-name="${esc(p.name)}" data-person-role="${esc(p.role)}">
-            <span class="tr-rank">${p.count}×</span>
-            <div class="tr-person-info"><p class="tr-person-name">${esc(p.name)}</p><p class="tr-person-sub">${roleLabel(p.role)}</p></div>
-            <span class="tr-person-score">${fmtNote(p.avg_note)}</span>
-          </div>`).join("") || `<p class="tr-note">Pas encore de tendance récurrente.</p>`}
-      `;
+        <div class="card-actions" style="background:var(--paper-raised); border:1px solid var(--line); border-top:none; border-radius:0 0 12px 12px; padding:8px 14px; margin-top:-1px;">
+          <button class="text-btn" data-toggle-like-a-voir="${esc(dr.mes_a_voir_id)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(dr.titre)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+          <button class="text-btn" data-open-comments-a-voir="${esc(dr.mes_a_voir_id)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(dr.titre)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
+        </div>
+      </div>`;
+    }).join("");
+  } else if (subTab === "tendances") {
+    const tLiked = hasLikedTendances(profil.id);
+    const tLikeCount = getTendancesLikeCount(profil.id);
+    const tCommentCount = getTendancesCommentCount(profil.id);
+    const tendancesActionsHtml = `<div class="card-actions" style="background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:8px 14px; margin-bottom:14px;">
+      <button class="text-btn" data-toggle-like-tendances="${esc(profil.id)}" data-titre="Tendances de ${esc(profil.pseudo)}" style="${tLiked ? "color:var(--seal); font-weight:600;" : ""}">${tLiked ? "♥" : "♡"} ${tLikeCount > 0 ? tLikeCount : ""}</button>
+      <button class="text-btn" data-open-comments-tendances="${esc(profil.id)}" data-titre="Tendances de ${esc(profil.pseudo)}">💬 ${tCommentCount > 0 ? tCommentCount : ""}</button>
+    </div>`;
+    if (!trendsDuProfil || !trendsDuProfil.records) {
+      contentHtml = tendancesActionsHtml + `<p class="tr-note">Pas encore assez de dramas notés pour calculer des tendances.</p>`;
+    } else {
+      contentHtml = tendancesActionsHtml + renderTrendsSections(trendsDuProfil, entriesDuProfil, profil.id);
     }
   } else if (subTab === "avis") {
     contentHtml = avisDuProfil.length === 0 ? `<p class="tr-note">Aucun avis publié.</p>` : avisDuProfil.map(avisCardHtml).join("");
@@ -2722,29 +3378,73 @@ function renderProfilPublicView() {
         <span class="tr-rank">▦</span>
         <div class="tr-person-info"><p class="tr-person-name">${esc(t.titre)}</p><p class="tr-person-sub">${esc(t.theme || "")}</p></div>
       </div>`).join("");
+  } else if (subTab === "cadeaux") {
+    contentHtml = collectionDuProfil.length === 0 ? `<p class="tr-note">Aucun cadeau gagné pour l'instant.</p>` : `
+      <div class="collection-grid">
+        ${collectionDuProfil.map((c) => {
+          const liked = hasLikedCadeau(c.id);
+          const likeCount = getLikeCadeauCount(c.id);
+          const commentCount = getCadeauCommentCount(c.id);
+          return `
+          <div>
+            <div class="collection-item" data-person-name="${esc(c.personnes.nom)}" data-person-role="${esc(c.personnes.role)}">
+              <img src="${esc(c.personnes.photo_url)}" alt="${esc(c.personnes.nom)}">
+              <p>${esc(c.personnes.nom)}</p>
+            </div>
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:4px;">
+              <button class="text-btn" data-toggle-like-cadeau="${esc(c.id)}" data-owner-id="${esc(c.user_id)}" data-titre="${esc(c.personnes.nom)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+              <button class="text-btn" data-open-comments-cadeau="${esc(c.id)}" data-owner-id="${esc(c.user_id)}" data-titre="${esc(c.personnes.nom)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`;
+  } else if (subTab === "jeux") {
+    const quizRows = quizDuProfil.map((q) => ({ kind: "quiz", id: q.id, date: q.date_quiz, detail: `${q.bonnes_reponses}/${q.total_questions} bonnes réponses`, score: `${q.score_total} pts`, icon: "🧠" }));
+    const ostRows = ostDuProfil.map((o) => ({ kind: "ost", id: o.id, date: o.date_partie, detail: o.mode || "OST Challenge", score: `${o.score} pts`, icon: "🎵" }));
+    const toutesLesParties = [...quizRows, ...ostRows].sort((a, b) => new Date(b.date) - new Date(a.date));
+    contentHtml = toutesLesParties.length === 0 ? `<p class="tr-note">Aucune partie jouée pour l'instant.</p>` : toutesLesParties.map((p) => {
+      const liked = hasLikedJeu(p.kind, p.id);
+      const likeCount = getJeuLikeCount(p.kind, p.id);
+      const commentCount = getJeuCommentCount(p.kind, p.id);
+      const titreJeu = p.kind === "quiz" ? "Quiz du jour" : "OST Challenge";
+      return `<div style="margin-bottom:9px;">
+        <div class="tr-person-row" style="margin-bottom:0; border-radius:12px 12px 0 0; cursor:default;">
+          <span class="tr-rank">${p.icon}</span>
+          <div class="tr-person-info"><p class="tr-person-name">${esc(titreJeu)} · ${formatDateFr(typeof p.date === "string" && p.date.includes("T") ? p.date.slice(0, 10) : p.date)}</p><p class="tr-person-sub">${esc(p.detail)}</p></div>
+          <span class="tr-person-score">${esc(p.score)}</span>
+        </div>
+        <div class="card-actions" style="background:var(--paper-raised); border:1px solid var(--line); border-top:none; border-radius:0 0 12px 12px; padding:8px 14px; margin-top:-1px;">
+          <button class="text-btn" data-toggle-like-jeu="${esc(p.id)}" data-jeu-kind="${esc(p.kind)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(titreJeu)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+          <button class="text-btn" data-open-comments-jeu="${esc(p.id)}" data-jeu-kind="${esc(p.kind)}" data-owner-id="${esc(profil.id)}" data-titre="${esc(titreJeu)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
+        </div>
+      </div>`;
+    }).join("");
   }
 
   return `<div class="trends-wrap">
+    ${state.profilRetourTab ? `<button class="text-btn" id="profilRetourBtn" style="margin-bottom:10px; font-weight:600;">← Retour</button>` : ""}
     <section class="tr-section">
-      <div class="modal-header" style="padding:0;">
-        ${isMe ? `
-        <label class="avatar-upload-zone">
-          ${profil.avatar_url ? `<img src="${esc(profil.avatar_url)}" class="modal-avatar">` : `<div class="stamp motif-flower" style="width:52px;height:52px;">${FLOWER_MOTIF_SVG}</div>`}
-          <span class="avatar-upload-badge">${state.imageProcessing ? "…" : "📷"}</span>
-          <input type="file" accept="image/*" style="display:none" id="avatarUploadInput">
-        </label>` : `
-        ${profil.avatar_url ? `<img src="${esc(profil.avatar_url)}" class="modal-avatar">` : `<div class="stamp motif-flower" style="width:52px;height:52px;">${FLOWER_MOTIF_SVG}</div>`}`}
-        <div style="flex:1;">
-          <h3 style="font-family:'Press Start 2P',cursive; font-size:13px; margin:0; color:var(--blue-deep);">${esc(profil.pseudo)}</h3>
-          ${profil.bio ? `<p class="modal-role" style="color:var(--ink-soft); font-weight:400;">${esc(profil.bio)}</p>` : ""}
+      <div class="profil-header-card">
+        <div class="profil-header-top">
+          ${isMe ? `
+          <label class="avatar-upload-zone">
+            ${profil.avatar_url ? `<img src="${esc(profil.avatar_url)}" class="profil-avatar">` : `<div class="stamp motif-flower profil-avatar" style="display:flex;align-items:center;justify-content:center;">${FLOWER_MOTIF_SVG}</div>`}
+            <span class="avatar-upload-badge">${state.imageProcessing ? "…" : "📷"}</span>
+            <input type="file" accept="image/*" style="display:none" id="avatarUploadInput">
+          </label>` : `
+          ${profil.avatar_url ? `<img src="${esc(profil.avatar_url)}" class="profil-avatar">` : `<div class="stamp motif-flower profil-avatar" style="display:flex;align-items:center;justify-content:center;">${FLOWER_MOTIF_SVG}</div>`}`}
+          <div class="profil-header-info">
+            <h3 class="profil-pseudo">${esc(profil.pseudo)}</h3>
+            ${profil.bio ? `<p class="profil-bio">${esc(profil.bio)}</p>` : profil.created_at ? `<p class="profil-bio">Membre depuis ${new Date(profil.created_at).getFullYear()}</p>` : ""}
+          </div>
+          ${!isMe ? `<button class="profil-follow-btn ${isFollowing(profil.id) ? "is-following" : ""}" data-follow-id="${esc(profil.id)}">${isFollowing(profil.id) ? "Abonné(e)" : "Suivre"}</button>` : `<button class="profil-follow-btn" id="logoutBtn">Déconnexion</button>`}
         </div>
-        ${!isMe ? `<button class="ghost-btn" style="flex:0; padding:8px 14px; ${isFollowing(profil.id) ? "border-color:var(--seal); color:var(--seal);" : ""}" data-follow-id="${esc(profil.id)}">${isFollowing(profil.id) ? "Abonné(e)" : "Suivre"}</button>` : `<button class="ghost-btn" style="flex:0; padding:8px 14px;" id="logoutBtn">Déconnexion</button>`}
-      </div>
-      <div class="modal-stat-row" style="margin-top:14px;">
-        <div class="modal-stat"><span class="v">${entriesDuProfil.length}</span><span class="l">Vus</span></div>
-        <div class="modal-stat"><span class="v">${fmtNote(note_avg)}</span><span class="l">Note moy.</span></div>
-        <div class="modal-stat" style="cursor:pointer;" data-voir-liste-abonnes="${esc(profil.id)}:abonnes"><span class="v">${getFollowerCount(profil.id)}</span><span class="l">Abonnés</span></div>
-        <div class="modal-stat" style="cursor:pointer;" data-voir-liste-abonnes="${esc(profil.id)}:abonnements"><span class="v">${getFollowingCount(profil.id)}</span><span class="l">Abonnements</span></div>
+        <div class="profil-stats-grid">
+          <div class="profil-stat" style="background:var(--celadon-soft);"><span class="v">${entriesDuProfil.length}</span><span class="l">Vus</span></div>
+          <div class="profil-stat" style="background:var(--gold-soft);"><span class="v">${fmtNote(note_avg)}</span><span class="l">Note moy.</span></div>
+          <div class="profil-stat" style="background:var(--seal-soft); cursor:pointer;" data-voir-liste-abonnes="${esc(profil.id)}:abonnes"><span class="v">${getFollowerCount(profil.id)}</span><span class="l">Abonnés</span></div>
+          <div class="profil-stat" style="background:var(--celadon-soft); cursor:pointer;" data-voir-liste-abonnes="${esc(profil.id)}:abonnements"><span class="v">${getFollowingCount(profil.id)}</span><span class="l">Abonnements</span></div>
+        </div>
       </div>
     </section>
     <section class="tr-section">
@@ -2795,10 +3495,13 @@ function attachCommunauteListeners() {
     btn.addEventListener("click", () => piocherEnvieAbonne(btn.dataset.piocherEnvie));
   });
   document.querySelectorAll("[data-toggle-like]").forEach((btn) => {
-    btn.addEventListener("click", () => toggleLikeAvis(btn.dataset.toggleLike));
+    btn.addEventListener("click", () => toggleLikeAvis(btn.dataset.toggleLike, btn.dataset.ownerId, btn.dataset.titre));
   });
   document.querySelectorAll("[data-toggle-like-cadeau]").forEach((btn) => {
-    btn.addEventListener("click", () => toggleLikeCadeau(btn.dataset.toggleLikeCadeau));
+    btn.addEventListener("click", () => toggleLikeCadeau(btn.dataset.toggleLikeCadeau, btn.dataset.ownerId, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-cadeau]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry("cadeau", btn.dataset.openCommentsCadeau, btn.dataset.titre, btn.dataset.ownerId));
   });
   document.querySelectorAll("[data-delete-avis]").forEach((btn) => {
     btn.addEventListener("click", () => supprimerAvis(btn.dataset.deleteAvis));
@@ -2834,8 +3537,54 @@ function attachCommunauteListeners() {
       openProfilPublic(id);
     });
   });
+  document.querySelectorAll("[data-toggle-like-visionnage]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleLikeVisionnage(btn.dataset.toggleLikeVisionnage, btn.dataset.ownerId, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-visionnage]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry("visionnage", btn.dataset.openCommentsVisionnage, btn.dataset.titre, btn.dataset.ownerId));
+  });
+  document.querySelectorAll("[data-toggle-like-a-voir]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleLikeAVoir(btn.dataset.toggleLikeAVoir, btn.dataset.ownerId, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-a-voir]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry("a_voir", btn.dataset.openCommentsAVoir, btn.dataset.titre, btn.dataset.ownerId));
+  });
+  document.querySelectorAll("[data-toggle-like-tendances]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleLikeTendances(btn.dataset.toggleLikeTendances, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-tendances]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry("tendances", btn.dataset.openCommentsTendances, btn.dataset.titre, btn.dataset.openCommentsTendances));
+  });
+  document.querySelectorAll("[data-toggle-like-valeur-sure]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleLikeValeurSure(btn.dataset.ownerId, btn.dataset.toggleLikeValeurSure, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-valeur-sure]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry("valeurs_sures", btn.dataset.openCommentsValeurSure, btn.dataset.titre, btn.dataset.ownerId));
+  });
+  document.querySelectorAll("[data-toggle-like-jeu]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleLikeJeu(btn.dataset.jeuKind, btn.dataset.toggleLikeJeu, btn.dataset.ownerId, btn.dataset.titre));
+  });
+  document.querySelectorAll("[data-open-comments-jeu]").forEach((btn) => {
+    btn.addEventListener("click", () => ouvrirCommentairesEntry(btn.dataset.jeuKind, btn.dataset.openCommentsJeu, btn.dataset.titre, btn.dataset.ownerId));
+  });
+  const entryCommentClose = document.getElementById("entryCommentClose");
+  if (entryCommentClose) entryCommentClose.addEventListener("click", fermerCommentairesEntry);
+  const entryCommentOverlay = document.getElementById("entryCommentOverlay");
+  if (entryCommentOverlay) {
+    entryCommentOverlay.addEventListener("click", (e) => { if (e.target === entryCommentOverlay) fermerCommentairesEntry(); });
+  }
+  const entryCommentInput = document.getElementById("entry-comment-input");
+  if (entryCommentInput) entryCommentInput.addEventListener("input", (e) => { if (state.entryCommentModal) state.entryCommentModal.draft = e.target.value; });
+  const entryCommentSubmitBtn = document.getElementById("entryCommentSubmitBtn");
+  if (entryCommentSubmitBtn) entryCommentSubmitBtn.addEventListener("click", publierCommentaireEntry);
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+  const profilRetourBtn = document.getElementById("profilRetourBtn");
+  if (profilRetourBtn) {
+    profilRetourBtn.addEventListener("click", () => {
+      setState({ activeTab: state.profilRetourTab || "communaute" });
+    });
+  }
   const avatarUploadInput = document.getElementById("avatarUploadInput");
   if (avatarUploadInput) {
     avatarUploadInput.addEventListener("change", (e) => {
@@ -2974,11 +3723,12 @@ async function publierTierlistComment() {
   if (!texte) { showToast("Écris un commentaire avant de publier."); return; }
   const note = state.tierlistCommentNote === "" ? null : Number(state.tierlistCommentNote);
   if (note !== null && (note < 0 || note > 10)) { showToast("La note doit être entre 0 et 10."); return; }
+  const uid = currentUserId();
 
   try {
     const { error } = await sb.from("tierlist_comments").insert([{
       tierlist_id: tierlistId,
-      user_id: currentUserId(),
+      user_id: uid,
       note,
       commentaire: texte,
     }]);
@@ -2986,6 +3736,13 @@ async function publierTierlistComment() {
     setState({ tierlistCommentDraft: "", tierlistCommentNote: "" });
     await chargerTierlistComments(tierlistId);
     showToast("Commentaire publié.");
+    const t = state.tierlists.find((x) => x.id === tierlistId);
+    if (t && t.user_id && t.user_id !== uid) {
+      const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+        to_user_id: t.user_id, from_user_id: uid, interaction_type: "comment", target_kind: "tierlist", target_id: tierlistId, titre: t.titre, contenu_apercu: texte.slice(0, 80),
+      }]);
+      if (errNotif) console.error("Erreur notification commentaire tierlist", errNotif);
+    }
   } catch (e) {
     console.error(e);
     showToast("Publication impossible.");
@@ -3326,7 +4083,7 @@ async function dupliquerTierlist(tierlistId) {
   }
 }
 
-async function toggleLikeTierlist(tierlistId) {
+async function toggleLikeTierlist(tierlistId, ownerId, titre) {
   if (!isLoggedIn()) { showToast("Connecte-toi pour aimer une tierlist."); return; }
   const uid = currentUserId();
   try {
@@ -3334,6 +4091,12 @@ async function toggleLikeTierlist(tierlistId) {
       await sb.from("tierlist_likes").delete().eq("tierlist_id", tierlistId).eq("user_id", uid);
     } else {
       await sb.from("tierlist_likes").insert([{ tierlist_id: tierlistId, user_id: uid }]);
+      if (ownerId && ownerId !== uid) {
+        const { error: errNotif } = await sb.from("notifications_interactions").insert([{
+          to_user_id: ownerId, from_user_id: uid, interaction_type: "like", target_kind: "tierlist", target_id: tierlistId, titre,
+        }]);
+        if (errNotif) console.error("Erreur notification like tierlist", errNotif);
+      }
     }
     await loadTierlists();
     render();
@@ -3391,7 +4154,7 @@ function renderTierlistsView() {
         </div>
         <div class="card-actions" style="margin-top:10px;">
           <button class="text-btn" data-view-tierlist="${esc(t.id)}">👁 Voir</button>
-          <button class="text-btn" data-toggle-like-tierlist="${esc(t.id)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+          <button class="text-btn" data-toggle-like-tierlist="${esc(t.id)}" data-owner-id="${esc(t.user_id)}" data-titre="${esc(t.titre)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
           ${isLoggedIn() ? `<button class="text-btn" data-duplicate-tierlist="${esc(t.id)}">⧉ Dupliquer</button>` : ""}
           ${mine ? `<button class="text-btn" data-edit-tierlist="${esc(t.id)}">✎ Modifier</button><button class="text-btn danger" data-delete-tierlist="${esc(t.id)}">🗑</button>` : ""}
         </div>
@@ -3642,7 +4405,7 @@ function attachTierlistListeners() {
     btn.addEventListener("click", () => setState({ tierlistsSort: btn.dataset.tierlistSort }));
   });
   document.querySelectorAll("[data-toggle-like-tierlist]").forEach((btn) => {
-    btn.addEventListener("click", () => toggleLikeTierlist(btn.dataset.toggleLikeTierlist));
+    btn.addEventListener("click", () => toggleLikeTierlist(btn.dataset.toggleLikeTierlist, btn.dataset.ownerId, btn.dataset.titre));
   });
   document.querySelectorAll("[data-duplicate-tierlist]").forEach((btn) => {
     btn.addEventListener("click", () => dupliquerTierlist(btn.dataset.duplicateTierlist));
@@ -5647,8 +6410,9 @@ function formatDateFr(isoDate) {
   return `${Number(d)} ${mois[Number(m) - 1]} ${y}`;
 }
 
-function renderYearDramaList(year) {
-  const dramasOfYear = state.mesEntries.filter((d) => Number(d.annee) === Number(year));
+function renderYearDramaList(year, entries) {
+  const list = entries || state.mesEntries;
+  const dramasOfYear = list.filter((d) => Number(d.annee) === Number(year));
   if (dramasOfYear.length === 0) return "";
   return `<div class="tr-year-list" id="tr-year-list-${esc(year)}">
     <p class="tr-subhead">Titres de ${year}</p>
@@ -5679,8 +6443,11 @@ const TRENDS_SECTIONS = [
 ];
 
 function renderTrendsNavDrawer() {
-  if (state.activeTab !== "tendances" || !isLoggedIn()) return "";
-  const trends = computeTrends(state.mesEntries);
+  if (!isLoggedIn()) return "";
+  const onMainTrends = state.activeTab === "tendances";
+  const onProfilTrends = state.activeTab === "profil" && state.profilPublicData && state.profilPublicData.profilSubTab === "tendances";
+  if (!onMainTrends && !onProfilTrends) return "";
+  const trends = onMainTrends ? computeTrends(state.mesEntries) : state.profilPublicData.trendsDuProfil;
   if (!trends || !trends.records) return "";
   const topRecurring = trends.recurringCollabs[0] || null;
   const sectionsPresentes = TRENDS_SECTIONS.filter((s) => {
@@ -5739,6 +6506,18 @@ function renderTrendsView() {
   if (!trends || !trends.records) {
     return `<div class="trends-wrap"><div class="empty-state"><p>Note au moins un drama pour voir apparaître tes tendances.</p></div></div>`;
   }
+  return `<div class="trends-wrap">${renderTrendsSections(trends, state.mesEntries)}</div>`;
+}
+
+// Corps commun des sections de tendances, factorisé pour être utilisé à
+// la fois par l'onglet principal "Tendances" (tes propres données,
+// state.mesEntries) et par le sous-onglet "Tendances" d'une fiche
+// profil (les données du profil consulté, qu'il s'agisse du tien ou de
+// celui de quelqu'un d'autre) — voir renderProfilPublicView(). `entries`
+// doit correspondre exactement aux entrées ayant servi à calculer
+// `trends` via computeTrends(), pour que "Année par année" pointe vers
+// les bons titres.
+function renderTrendsSections(trends, entries, profilId) {
   const { records, distribution, coupsDeCoeur, deceptions, avgNote, peopleProfiles, allCollabs, recurringCollabs, yearStats, mostGenerousYear, mostSevereYear, efficiency, formats, totalPeople, actingDuos, tasteProfile, viewingStats } = trends;
 
   const ranked = peopleProfiles.filter((p) => p.role === state.trendsRole && p.count >= 2 && p.avg_note !== null).sort((a, b) => b.avg_note - a.avg_note).slice(0, 8);
@@ -5782,7 +6561,7 @@ if (tasteProfile.formatLean) {
 
 const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(", ")}.` : null;
 
-  let html = `<div class="trends-wrap">
+  let html = `
     ${tasteSentence ? `
     <section class="tr-section">
       <div class="tr-highlight" style="background: linear-gradient(135deg, var(--paper-sunken), var(--seal-soft));">
@@ -5819,12 +6598,24 @@ const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(
       <div class="tr-role-toggle">
         ${["acteur", "actrice", "scenariste", "realisateur"].map((r) => `<button class="${state.trendsRole === r ? "active" : ""}" data-trends-role="${r}">${roleLabel(r)}s</button>`).join("")}
       </div>
-      ${ranked.length === 0 ? `<p class="tr-note">Pas encore 2 titres en commun pour cette catégorie.</p>` : ranked.map((p, i) => `
-        <div class="tr-person-row" data-person-name="${esc(p.name)}" data-person-role="${esc(p.role)}">
-          ${findPersonPhoto(p.name, p.role) ? `<img src="${esc(findPersonPhoto(p.name, p.role))}" class="tr-person-avatar">` : `<span class="tr-rank">${i + 1}</span>`}
-          <div class="tr-person-info"><p class="tr-person-name">${esc(p.name)}</p><p class="tr-person-sub">${esc(p.titles.map((t) => t.titre).join(", "))}</p></div>
-          <span class="tr-person-score">${fmtNote(p.avg_note)}</span>
-        </div>`).join("")}
+      ${ranked.length === 0 ? `<p class="tr-note">Pas encore 2 titres en commun pour cette catégorie.</p>` : ranked.map((p, i) => {
+        const personneId = profilId ? findPersonneId(p.name, p.role) : null;
+        const showActions = !!(profilId && personneId);
+        const liked = showActions && hasLikedValeurSure(personneId);
+        const likeCount = showActions ? getValeurSureLikeCount(personneId) : 0;
+        const commentCount = showActions ? getValeurSureCommentCount(personneId) : 0;
+        return `<div style="margin-bottom:${showActions ? "9px" : "0"};">
+          <div class="tr-person-row" data-person-name="${esc(p.name)}" data-person-role="${esc(p.role)}" style="${showActions ? "margin-bottom:0; border-radius:12px 12px 0 0;" : ""}">
+            ${findPersonPhoto(p.name, p.role) ? `<img src="${esc(findPersonPhoto(p.name, p.role))}" class="tr-person-avatar">` : `<span class="tr-rank">${i + 1}</span>`}
+            <div class="tr-person-info"><p class="tr-person-name">${esc(p.name)}</p><p class="tr-person-sub">${esc(p.titles.map((t) => t.titre).join(", "))}</p></div>
+            <span class="tr-person-score">${fmtNote(p.avg_note)}</span>
+          </div>
+          ${showActions ? `<div class="card-actions" style="background:var(--paper-raised); border:1px solid var(--line); border-top:none; border-radius:0 0 12px 12px; padding:8px 14px; margin-top:-1px;">
+            <button class="text-btn" data-toggle-like-valeur-sure="${esc(personneId)}" data-owner-id="${esc(profilId)}" data-titre="${esc(p.name)}" style="${liked ? "color:var(--seal); font-weight:600;" : ""}">${liked ? "♥" : "♡"} ${likeCount > 0 ? likeCount : ""}</button>
+            <button class="text-btn" data-open-comments-valeur-sure="${esc(personneId)}" data-owner-id="${esc(profilId)}" data-titre="${esc(p.name)}">💬 ${commentCount > 0 ? commentCount : ""}</button>
+          </div>` : ""}
+        </div>`;
+      }).join("")}
     </section>
 
     ${topRecurring ? `
@@ -5882,7 +6673,7 @@ const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(
         }).join("")}
       </div></div>
       ${mostGenerousYear && mostSevereYear ? `<div class="tr-insight">Année la mieux notée : <b>${mostGenerousYear.annee}</b> (${fmtNote(mostGenerousYear.avg_note)}/10, ${mostGenerousYear.count} titre${mostGenerousYear.count > 1 ? "s" : ""}). Année la moins bien notée : <b>${mostSevereYear.annee}</b> (${fmtNote(mostSevereYear.avg_note)}/10${mostSevereYear.count === 1 ? " — un seul titre, donc peu représentatif" : `, ${mostSevereYear.count} titres`}).</div>` : ""}
-      ${state.selectedYear ? renderYearDramaList(state.selectedYear) : ""}
+      ${state.selectedYear ? renderYearDramaList(state.selectedYear, entries) : ""}
     </section>
 
     <section class="tr-section" id="tr-sec-formats">
@@ -5910,7 +6701,7 @@ const tasteSentence = tasteParts.length ? `En quelques mots : ${tasteParts.join(
       <h2 class="tr-title">Tes habitudes</h2>
       <div class="tr-insight">Sur ${viewingStats.totalWithDate} titres avec une date de visionnage renseignée, c'est en <b>${viewingStats.busiestMonthName}</b> que tu regardes le plus de dramas (${viewingStats.busiestMonthCount} titre${viewingStats.busiestMonthCount > 1 ? "s" : ""}).</div>
     </section>` : ""}
-  </div>`;
+  `;
 
   return html;
 }
@@ -6223,7 +7014,7 @@ function render() {
       </div>
       <div class="main-nav">
         <button class="main-nav-btn ${["tendances","liste","avoir"].includes(state.activeTab) ? "active" : ""}" data-main-nav="profil">👤 Mon profil</button>
-        <button class="main-nav-btn ${["communaute","tierlists","tierlist-builder","profil","quiz","deezer","ost"].includes(state.activeTab) ? "active" : ""}" data-main-nav="communaute">🇰🇷 Communauté</button>
+        <button class="main-nav-btn ${["communaute","tierlists","tierlist-builder","profil","quiz","ost","abonnements","jeux"].includes(state.activeTab) ? "active" : ""}" data-main-nav="communaute">🇰🇷 Communauté</button>
       </div>
       ${["tendances","liste","avoir"].includes(state.activeTab) ? `
       <div class="tabbar">
@@ -6231,24 +7022,23 @@ function render() {
         <button class="tab-btn ${state.activeTab === "liste" ? "active" : ""}" data-tab="liste">Ma liste</button>
         <button class="tab-btn ${state.activeTab === "avoir" ? "active" : ""}" data-tab="avoir">À voir</button>
       </div>` : ""}
-      ${["communaute","tierlists","tierlist-builder","profil","quiz","deezer","ost"].includes(state.activeTab) ? `
-      <div class="subnav">
-        <button class="${state.activeTab === "communaute" ? "active" : ""}" data-tab="communaute">Fil</button>
-        <button class="${state.activeTab === "tierlists" ? "active" : ""}" data-tab="tierlists">Tierlists</button>
-        <button class="${state.activeTab === "quiz" ? "active" : ""}" data-tab="quiz">Quiz du jour</button>
-        <button class="${state.activeTab === "deezer" ? "active" : ""}" data-tab="deezer">Deezer</button>
-        <button class="${state.activeTab === "ost" ? "active" : ""}" data-tab="ost">OST Challenge</button>
+      ${["communaute","tierlists","tierlist-builder","profil","quiz","ost","abonnements","jeux"].includes(state.activeTab) ? `
+      <div class="subnav subnav-grid">
+        <button class="${state.activeTab === "communaute" ? "active" : ""}" data-tab="communaute">Fil d'actualité</button>
+        <button class="${state.activeTab === "abonnements" ? "active" : ""}" data-tab="abonnements">Abonnements</button>
+        <button class="${["jeux","quiz","ost","tierlists","tierlist-builder"].includes(state.activeTab) ? "active" : ""}" data-tab="jeux">Jeux</button>
       </div>` : ""}
     </header>
     ${state.activeTab === "liste" ? renderListView()
       : state.activeTab === "avoir" ? renderAVoirView()
       : state.activeTab === "tendances" ? renderTrendsView()
       : state.activeTab === "communaute" ? renderCommunauteView()
+      : state.activeTab === "abonnements" ? renderAbonnementsView()
+      : state.activeTab === "jeux" ? renderJeuxView()
       : state.activeTab === "tierlists" ? renderTierlistsView()
       : state.activeTab === "tierlist-builder" ? renderTierlistBuilder()
       : state.activeTab === "profil" ? renderProfilPublicView()
       : state.activeTab === "quiz" ? renderQuizView()
-      : state.activeTab === "deezer" ? renderDeezerView()
       : state.activeTab === "ost" ? renderOstView()
       : renderTrendsView()}
     ${renderTrendsNavDrawer()}
@@ -6264,6 +7054,7 @@ function render() {
     ${renderSuggererAModal()}
     ${renderRechercheProfilModal()}
     ${renderListeAbonnesModal()}
+    ${renderEntryCommentModal()}
     ${renderCollectionModal()}
     ${renderCadeauModal()}
     ${renderHistoriqueQuizModal()}
@@ -6335,6 +7126,7 @@ function attachListeners() {
       ouvrirNotifSuggestions();
       marquerSuggestionsVues();
       marquerAbonnementsVus();
+      marquerInteractionsVues();
     });
   }
   const notifSuggestionsClose = document.getElementById("notifSuggestionsClose");
@@ -6789,10 +7581,19 @@ function attachListeners() {
 // Replie la ligne de stats (vus / note moy. / heures) dès qu'on
 // scrolle vers le bas, pour gagner de la place pour le contenu.
 // Réapparaît dès qu'on remonte tout en haut.
+// Limité par requestAnimationFrame : sans ça, l'écriture DOM
+// (classList.toggle) se répète à chaque event "scroll" natif — qui
+// peut se déclencher plus souvent qu'une frame d'affichage pendant un
+// scroll rapide — et entre en concurrence avec le rendu en cours.
+let scrollHeaderRaf = null;
 window.addEventListener("scroll", () => {
-  const header = document.querySelector(".app-header");
-  if (!header) return;
-  header.classList.toggle("scrolled", computeHeaderScrolled());
+  if (scrollHeaderRaf) return;
+  scrollHeaderRaf = requestAnimationFrame(() => {
+    scrollHeaderRaf = null;
+    const header = document.querySelector(".app-header");
+    if (!header) return;
+    header.classList.toggle("scrolled", computeHeaderScrolled());
+  });
 }, { passive: true });
 
 // ============== INIT ==============
