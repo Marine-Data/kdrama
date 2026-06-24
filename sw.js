@@ -53,3 +53,40 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(event.request))
   );
 });
+
+// ---- Notifications push ----
+// Reçoit le message envoyé par l'Edge Function "send-push" (déclenchée
+// automatiquement par des triggers sur notifications_interactions,
+// notifications_abonnements et suggestions_a_voir) et l'affiche comme
+// notification système, même si l'app n'est pas ouverte.
+self.addEventListener("push", (event) => {
+  let data = { title: "Dramatic", body: "Nouvelle activité sur ton carnet" };
+  try {
+    if (event.data) data = event.data.json();
+  } catch (e) {
+    // Si le payload n'est pas du JSON valide, on garde le message par défaut
+    // plutôt que de planter le gestionnaire d'évènement.
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Dramatic", {
+      body: data.body || "",
+      icon: "./icons/icon-192.png",
+      badge: "./icons/icon-192.png",
+      data: { url: "./" },
+    })
+  );
+});
+
+// Au tap sur la notification : ramène l'app au premier plan si un onglet
+// est déjà ouvert, sinon en ouvre un nouveau.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || "./";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsArr) => {
+      const existing = clientsArr.find((c) => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
