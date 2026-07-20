@@ -83,7 +83,14 @@ function esc(s) {
 async function tmdbSearchPerson(nom, apiKey) {
   const url = `https://api.themoviedb.org/3/search/person?api_key=${apiKey}&query=${encodeURIComponent(nom)}&language=fr-FR`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const errBody = await res.json();
+      if (errBody && errBody.status_message) detail += ` — ${errBody.status_message}`;
+    } catch (_) {}
+    throw new Error(detail);
+  }
   const data = await res.json();
   return (data.results && data.results[0]) || null;
 }
@@ -97,6 +104,9 @@ function nomsProches(a, b) {
 document.getElementById("btnDiagnostic").addEventListener("click", async () => {
   const apiKey = document.getElementById("tmdbKey").value.trim();
   if (!apiKey) { alert("Colle d'abord ta clé TMDB."); return; }
+  if (apiKey.startsWith("eyJ") || apiKey.length > 100) {
+    if (!confirm("Cette clé ressemble à un « Read Access Token » TMDB (v4), pas à la clé API classique (v3). Cet outil utilise le format v3. Continuer quand même risque de faire échouer toutes les requêtes. Continuer ?")) return;
+  }
 
   const btn = document.getElementById("btnDiagnostic");
   btn.disabled = true;
@@ -129,7 +139,7 @@ document.getElementById("btnDiagnostic").addEventListener("click", async () => {
         conformes++;
       }
     } catch (e) {
-      candidats.push({ ...p, roleActuel: p.role, roleSuggere: null, statut: "verifier", tmdbNom: "(erreur réseau)", tmdbGenre: "?" });
+      candidats.push({ ...p, roleActuel: p.role, roleSuggere: null, statut: "verifier", tmdbNom: `(erreur: ${e.message})`, tmdbGenre: "?" });
     }
     // petite pause pour rester tranquille sur le rate limit TMDB
     await new Promise((r) => setTimeout(r, 120));
