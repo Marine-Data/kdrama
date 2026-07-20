@@ -16,10 +16,23 @@ import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render,
 // ---- état additionnel (à fusionner dans l'objet `state` global) ----
 // ---- initialisation : récupère la session existante au chargement ----
 export async function initAuth() {
-  const { data } = await sb.auth.getSession();
-  state.session = data.session || null;
-  if (state.session) {
-    await loadProfilCourant();
+  // IMPORTANT : entouré d'un try/catch pour ne jamais bloquer le
+  // démarrage de l'app. Sans ça, si getSession() échoue (session/token
+  // corrompu dans le stockage de la PWA installée, souci réseau
+  // ponctuel...), initAuth() rejette silencieusement, loadData() n'est
+  // alors jamais appelé (voir `initAuth().then(() => loadData())` dans
+  // main.js), et state.loading reste true pour toujours : l'app reste
+  // bloquée sur l'écran "Ouverture du carnet…" sans aucune erreur
+  // visible. C'est la cause d'un bug réel signalé sur PWA installée.
+  try {
+    const { data } = await sb.auth.getSession();
+    state.session = data.session || null;
+    if (state.session) {
+      await loadProfilCourant();
+    }
+  } catch (e) {
+    console.error("Erreur récupération session (l'app démarre quand même, en mode non connecté)", e);
+    state.session = null;
   }
 
   // Écoute les changements (connexion, déconnexion, refresh token).
