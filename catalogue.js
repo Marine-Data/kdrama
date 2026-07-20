@@ -7,7 +7,7 @@
 // et de social.js/auth.js pour quelques actions croisées.
 // ============================================================
 
-import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, findPersonPhoto, splitPeople, formatDateFr, castingLinksHtml, computeTrends, enrichirDramasAvecPersonnes, fmtNote, chargerMesVisionnages, chargerDramaPersonnes, emptyAVoirDraft, emptyDraft, entriesPourFichesPersonnes, findCollabsFor, findPersonneId, findProfile, getNombreVus, getNoteReference, loadData, personLinkHtml, uploadImage, roleLabel, reliabilityBadge } from './main.js';
+import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, findPersonPhoto, splitPeople, formatDateFr, castingLinksHtml, computeTrends, enrichirDramasAvecPersonnes, fmtNote, chargerMesVisionnages, chargerDramaPersonnes, emptyAVoirDraft, emptyDraft, entriesPourFichesPersonnes, findCollabsFor, findPersonneId, findProfile, getNombreVus, getNoteReference, loadData, personLinkHtml, uploadImage, roleLabel, reliabilityBadge, FLOWER_MOTIF_SVG } from './main.js';
 import { getValeurSureCommentCount, getValeurSureLikeCount, hasLikedValeurSure, openProfilPublic } from './social.js';
 import { loadProfilCourant } from './auth.js';
 

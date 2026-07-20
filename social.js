@@ -7,7 +7,7 @@
 // quelques actions croisées (marquer vu, tendances).
 // ============================================================
 
-import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, formatDateFr, castingLinksHtml, computeTrends, enrichirDramasAvecPersonnes, fmtNote, chargerMesAVoir } from './main.js';
+import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, formatDateFr, castingLinksHtml, computeTrends, enrichirDramasAvecPersonnes, fmtNote, chargerMesAVoir, FLOWER_MOTIF_SVG } from './main.js';
 import { stampHtml } from './catalogue.js';
 import { finishQuiz, loadLeaderboardQuiz } from './quiz.js';
 import { loadOstLeaderboard } from './ost.js';

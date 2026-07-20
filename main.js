@@ -729,7 +729,10 @@ function goBackModalStack() {
 }
 
 // Traditional Korean blue-and-white porcelain-style floral motif, used as placeholder when no image is set.
-const FLOWER_MOTIF_SVG = `<svg viewBox="0 0 60 60" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+// EXPORTÉE car utilisée aussi dans catalogue.js, social.js et tierlist.js
+// (avant la restructuration en modules, elle était visible partout
+// automatiquement ; il fallait l'exporter explicitement après le découpage).
+export const FLOWER_MOTIF_SVG = `<svg viewBox="0 0 60 60" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
   <circle cx="30" cy="30" r="27" fill="none" stroke="currentColor" stroke-width="1.6"/>
   <g fill="currentColor" opacity="0.9">
     <ellipse cx="30" cy="18" rx="5" ry="9"/>

@@ -5,7 +5,7 @@
 // Dépend de main.js pour l'état global et les helpers partagés.
 // ============================================================
 
-import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, findPersonPhoto, splitPeople } from './main.js';
+import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, findPersonPhoto, splitPeople, FLOWER_MOTIF_SVG } from './main.js';
 import { stampHtml } from './catalogue.js';
 import { tenterGagnerCadeau } from './social.js';
 
