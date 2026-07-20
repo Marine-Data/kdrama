@@ -4,7 +4,8 @@
 // Dépend de main.js pour l'état global et quelques helpers.
 // ============================================================
 
-import { state, setState, esc, sb, showToast, currentUserId, isLoggedIn, shuffleWithCorrect, render } from './main.js';
+import { state, setState, esc, sb, showToast, currentUserId, isLoggedIn, render } from './main.js';
+import { shuffleWithCorrect } from './quiz.js';
 
 /* ============================================================
    MODULE OST CHALLENGE — TROIS MODES
