@@ -4,7 +4,7 @@
 // de l'app shell pour un démarrage plus rapide et un minimum de
 // résilience hors-ligne.
 
-const CACHE_NAME = "dramatic-cache-v5";
+const CACHE_NAME = "dramatic-cache-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,7 +14,9 @@ const APP_SHELL = [
   "./ost.js",
   "./auth.js",
   "./tierlist.js",
-  "./quiz.js"
+  "./quiz.js",
+  "./social.js",
+  "./catalogue.js"
 ];
 
 self.addEventListener("install", (event) => {

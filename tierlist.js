@@ -5,7 +5,9 @@
 // Dépend de main.js pour l'état global et les helpers partagés.
 // ============================================================
 
-import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, findPersonPhoto, splitPeople, stampHtml, tenterGagnerCadeau } from './main.js';
+import { state, setState, esc, showToast, sb, isLoggedIn, currentUserId, render, avecBoutonDesactive, findPersonPhoto, splitPeople } from './main.js';
+import { stampHtml } from './catalogue.js';
+import { tenterGagnerCadeau } from './social.js';
 
 export function renderTierlistViewerModal() {
   return `<div class="modal-overlay" id="tierlistViewerOverlay">
