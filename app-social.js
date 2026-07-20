@@ -596,4 +596,3 @@ function commentFeedEntry(entryId) {
     }
   }
 }
-
