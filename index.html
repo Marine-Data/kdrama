@@ -30,6 +30,42 @@
 -->
 <div id="deezer-mini-player"></div>
 
+<!--
+  DIAGNOSTIC TEMPORAIRE — à retirer une fois le blocage sur l'écran de
+  chargement résolu. Affiche l'erreur réelle directement dans l'écran
+  "Ouverture du carnet…" (au lieu qu'elle ne reste visible que dans une
+  console qu'on ne peut pas consulter sur téléphone), et signale un
+  blocage silencieux (aucune erreur, mais requête réseau qui ne répond
+  jamais) si rien ne s'est passé après 8 secondes.
+-->
+<script>
+(function () {
+  function afficher(msg) {
+    var p = document.querySelector('.loading-screen p');
+    if (!p) return;
+    p.textContent = msg;
+    p.style.fontSize = '11px';
+    p.style.lineHeight = '1.5';
+    p.style.padding = '0 24px';
+    p.style.wordBreak = 'break-word';
+  }
+  window.addEventListener('error', function (e) {
+    afficher('Erreur JS : ' + e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason;
+    var msg = (r && r.message) ? r.message : String(r);
+    afficher('Erreur promesse non gérée : ' + msg);
+  });
+  setTimeout(function () {
+    var p = document.querySelector('.loading-screen p');
+    if (p && p.textContent.indexOf('Ouverture') === 0) {
+      afficher('Toujours bloqué après 8 secondes, sans erreur détectée : probable requête réseau qui ne répond jamais (Supabase ou autre). Fais une capture de cet écran pour Claude.');
+    }
+  }, 8000);
+})();
+</script>
+
 <script type="module" src="./main.js"></script>
 </body>
 </html>
