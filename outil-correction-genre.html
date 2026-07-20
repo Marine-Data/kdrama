@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outil ponctuel — Correction genre acteur/actrice</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 720px; margin: 0 auto; padding: 16px; background: #f5f7fa; color: #2b3a55; }
+  h1 { font-size: 18px; }
+  p.note { font-size: 13px; color: #5b6c8a; line-height: 1.5; }
+  input[type=text], input[type=password] { width: 100%; padding: 10px; box-sizing: border-box; border: 2px solid #2b3a55; border-radius: 4px; margin: 6px 0 14px; font-size: 14px; }
+  button { background: #3f5f96; color: white; border: none; padding: 12px 18px; border-radius: 4px; font-size: 14px; cursor: pointer; margin: 4px 4px 4px 0; }
+  button:disabled { opacity: 0.5; }
+  button.secondary { background: #6fb8b0; }
+  #progress { font-size: 13px; color: #5b6c8a; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #dceaf8; vertical-align: top; }
+  th { background: #dceaf8; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-mismatch { background: #f7d6d6; color: #a33; }
+  .badge-verifier { background: #fbeec7; color: #8a6100; }
+  .row-mismatch { background: #fff6f6; }
+  .row-verifier { background: #fffdf3; }
+  #resultats { display: none; }
+  #resume { font-weight: 600; margin-top: 10px; }
+  .log { font-size: 12px; font-family: monospace; white-space: pre-wrap; background: #fff; border: 1px solid #dceaf8; border-radius: 4px; padding: 10px; margin-top: 14px; max-height: 240px; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<h1>🔧 Outil ponctuel : correction genre acteur/actrice</h1>
+<p class="note">
+  Compare chaque personne cataloguée comme "acteur" ou "actrice" au genre réel connu de TMDB, liste les écarts probables,
+  et applique les corrections que tu coches — en réassignant proprement toutes les liaisons existantes (dramas, collection,
+  likes, commentaires) sans rien casser. Rien n'est modifié tant que tu n'as pas coché puis cliqué sur "Appliquer".
+  Cet outil est à usage unique : une fois le nettoyage fait, tu peux le jeter.
+</p>
+
+<label>Ta clé API TMDB :</label>
+<input type="password" id="tmdbKey" placeholder="Colle ta clé TMDB ici">
+<p class="note" id="clePrefillNote"></p>
+
+<button id="btnDiagnostic">Lancer le diagnostic</button>
+
+<div id="progress"></div>
+<div id="resultats">
+  <div id="resume"></div>
+  <table id="tableResultats">
+    <thead><tr><th></th><th>Nom (en base)</th><th>Rôle actuel</th><th>TMDB trouve</th><th>Statut</th></tr></thead>
+    <tbody id="tbodyResultats"></tbody>
+  </table>
+  <button id="btnAppliquer" class="secondary">Appliquer les corrections cochées</button>
+  <div class="log" id="log" style="display:none;"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://osqyczwawbbwjwaubtvc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Z4ykq9R8uYhtrAks301TPA_ujR1K2VB";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let candidats = []; // { id, nom, roleActuel, roleSuggere, statut, tmdbNom, tmdbGenre }
+
+// Récupère automatiquement la clé TMDB déjà enregistrée par l'app,
+// à condition que cette page soit ouverte sur le même site (même
+// origine = même localStorage). Si elle est ouverte en fichier local,
+// ce localStorage sera vide et il faudra coller la clé à la main.
+(function prefillCle() {
+  const cle = localStorage.getItem("kdrama_tmdb_api_key");
+  const note = document.getElementById("clePrefillNote");
+  if (cle) {
+    document.getElementById("tmdbKey").value = cle;
+    note.textContent = "✅ Clé récupérée automatiquement depuis l'app.";
+  } else {
+    note.textContent = "Clé non trouvée automatiquement (page ouverte hors du site de l'app, ou clé jamais enregistrée). Récupère-la dans l'app : bouton clé API TMDB lors de l'ajout d'un drama — ou crée-en une gratuitement sur themoviedb.org (Paramètres > API).";
+  }
+})();
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function tmdbSearchPerson(nom, apiKey) {
+  const url = `https://api.themoviedb.org/3/search/person?api_key=${apiKey}&query=${encodeURIComponent(nom)}&language=fr-FR`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return (data.results && data.results[0]) || null;
+}
+
+function nomsProches(a, b) {
+  const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const na = norm(a), nb = norm(b);
+  return na === nb || na.includes(nb) || nb.includes(na);
+}
+
+document.getElementById("btnDiagnostic").addEventListener("click", async () => {
+  const apiKey = document.getElementById("tmdbKey").value.trim();
+  if (!apiKey) { alert("Colle d'abord ta clé TMDB."); return; }
+
+  const btn = document.getElementById("btnDiagnostic");
+  btn.disabled = true;
+  const progress = document.getElementById("progress");
+
+  const { data: personnes, error } = await sb.from("personnes").select("id,nom,role").in("role", ["acteur", "actrice"]).order("nom");
+  if (error) { alert("Erreur Supabase : " + error.message); btn.disabled = false; return; }
+
+  candidats = [];
+  let conformes = 0;
+
+  for (let i = 0; i < personnes.length; i++) {
+    const p = personnes[i];
+    progress.textContent = `Vérification ${i + 1}/${personnes.length} — ${p.nom}...`;
+    try {
+      const result = await tmdbSearchPerson(p.nom, apiKey);
+      if (!result || !result.gender) {
+        candidats.push({ ...p, roleActuel: p.role, roleSuggere: null, statut: "verifier", tmdbNom: result ? result.name : "(aucun résultat)", tmdbGenre: "inconnu" });
+        continue;
+      }
+      const genreTmdb = result.gender === 1 ? "femme" : result.gender === 2 ? "homme" : "inconnu";
+      const roleAttenduTmdb = result.gender === 1 ? "actrice" : result.gender === 2 ? "acteur" : null;
+      const nomProche = nomsProches(p.nom, result.name);
+
+      if (roleAttenduTmdb && roleAttenduTmdb !== p.role && nomProche) {
+        candidats.push({ ...p, roleActuel: p.role, roleSuggere: roleAttenduTmdb, statut: "mismatch", tmdbNom: result.name, tmdbGenre: genreTmdb });
+      } else if (!nomProche || !roleAttenduTmdb) {
+        candidats.push({ ...p, roleActuel: p.role, roleSuggere: roleAttenduTmdb, statut: "verifier", tmdbNom: result.name, tmdbGenre: genreTmdb });
+      } else {
+        conformes++;
+      }
+    } catch (e) {
+      candidats.push({ ...p, roleActuel: p.role, roleSuggere: null, statut: "verifier", tmdbNom: "(erreur réseau)", tmdbGenre: "?" });
+    }
+    // petite pause pour rester tranquille sur le rate limit TMDB
+    await new Promise((r) => setTimeout(r, 120));
+  }
+
+  progress.textContent = `Diagnostic terminé sur ${personnes.length} personnes.`;
+  afficherResultats(conformes, personnes.length);
+  btn.disabled = false;
+});
+
+function afficherResultats(conformes, total) {
+  const mismatches = candidats.filter((c) => c.statut === "mismatch");
+  const aVerifier = candidats.filter((c) => c.statut === "verifier");
+
+  document.getElementById("resume").textContent =
+    `${conformes} conformes · ${mismatches.length} à corriger (probable) · ${aVerifier.length} à vérifier manuellement (nom ambigu ou genre TMDB inconnu)`;
+
+  const tbody = document.getElementById("tbodyResultats");
+  tbody.innerHTML = "";
+
+  [...mismatches, ...aVerifier].forEach((c, idx) => {
+    const tr = document.createElement("tr");
+    tr.className = c.statut === "mismatch" ? "row-mismatch" : "row-verifier";
+    const checked = c.statut === "mismatch" ? "checked" : "";
+    const disabled = c.roleSuggere ? "" : "disabled";
+    tr.innerHTML = `
+      <td><input type="checkbox" data-idx="${idx}" ${checked} ${disabled}></td>
+      <td>${esc(c.nom)}</td>
+      <td>${esc(c.roleActuel)}${c.roleSuggere ? ` → <strong>${esc(c.roleSuggere)}</strong>` : ""}</td>
+      <td>${esc(c.tmdbNom)} (${esc(c.tmdbGenre)})</td>
+      <td><span class="badge ${c.statut === "mismatch" ? "badge-mismatch" : "badge-verifier"}">${c.statut === "mismatch" ? "à corriger" : "à vérifier"}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  window._candidatsAffiches = [...mismatches, ...aVerifier];
+  document.getElementById("resultats").style.display = mismatches.length + aVerifier.length > 0 ? "block" : "none";
+  if (mismatches.length + aVerifier.length === 0) {
+    document.getElementById("resume").textContent += " — rien à signaler, tout est déjà cohérent 🎉";
+  }
+}
+
+async function reassignerPersonne(ancienId, nouvelId, log) {
+  const tables = [
+    { nom: "drama_personnes", colonne: "personne_id" },
+    { nom: "collection_acteurs", colonne: "personne_id" },
+    { nom: "valeurs_sures_likes", colonne: "personne_id" },
+    { nom: "valeurs_sures_comments", colonne: "personne_id" },
+  ];
+  for (const t of tables) {
+    const { error } = await sb.from(t.nom).update({ [t.colonne]: nouvelId }).eq(t.colonne, ancienId);
+    if (error) { log.push(`  ⚠️ échec réassignation ${t.nom} : ${error.message}`); return false; }
+  }
+  return true;
+}
+
+document.getElementById("btnAppliquer").addEventListener("click", async () => {
+  const checkboxes = document.querySelectorAll('#tbodyResultats input[type=checkbox]:checked');
+  if (checkboxes.length === 0) { alert("Aucune ligne cochée."); return; }
+  if (!confirm(`Appliquer la correction sur ${checkboxes.length} personne(s) ? Cette action modifie la base de données.`)) return;
+
+  const logDiv = document.getElementById("log");
+  logDiv.style.display = "block";
+  const log = [];
+
+  for (const cb of checkboxes) {
+    const c = window._candidatsAffiches[Number(cb.dataset.idx)];
+    log.push(`→ ${c.nom} : ${c.roleActuel} → ${c.roleSuggere}`);
+    logDiv.textContent = log.join("\n");
+
+    // Une personne avec (nom, roleSuggere) existe-t-elle déjà ?
+    const { data: existante } = await sb.from("personnes").select("id").eq("nom", c.nom).eq("role", c.roleSuggere).maybeSingle();
+
+    if (existante) {
+      log.push(`  fusion vers la personne existante ${existante.id}`);
+      logDiv.textContent = log.join("\n");
+      const ok = await reassignerPersonne(c.id, existante.id, log);
+      if (ok) {
+        // met à jour le rôle sur les liens drama_personnes déjà déplacés
+        await sb.from("drama_personnes").update({ role: c.roleSuggere }).eq("personne_id", existante.id);
+        const { error: errDelete } = await sb.from("personnes").delete().eq("id", c.id);
+        if (errDelete) log.push(`  ⚠️ suppression de l'ancienne fiche impossible : ${errDelete.message}`);
+        else log.push(`  ✅ fusionné et ancienne fiche supprimée`);
+      }
+    } else {
+      const { error: errUpdate } = await sb.from("personnes").update({ role: c.roleSuggere }).eq("id", c.id);
+      if (errUpdate) { log.push(`  ⚠️ échec mise à jour : ${errUpdate.message}`); }
+      else {
+        await sb.from("drama_personnes").update({ role: c.roleSuggere }).eq("personne_id", c.id);
+        log.push(`  ✅ rôle corrigé directement`);
+      }
+    }
+    logDiv.textContent = log.join("\n");
+  }
+
+  log.push("\nTerminé. Vérifie l'app pour confirmer que tout est cohérent.");
+  logDiv.textContent = log.join("\n");
+});
+</script>
+
+</body>
+</html>
