@@ -525,3 +525,27 @@
   .more-menu-panel { position:absolute; top:46px; right:16px; background:var(--paper-raised); border:2px solid var(--line); border-radius:3px; box-shadow:3px 3px 0 var(--line); z-index:40; min-width:160px; padding:6px; }
   .more-menu-panel button { display:block; width:100%; text-align:left; border:none; background:none; padding:9px 10px; font-size:13px; color:var(--ink); cursor:pointer; font-family:inherit; border-radius:3px; }
   .more-menu-panel button:hover { background:var(--paper-sunken); }
+
+  /* ============================================================
+     MODE RECHERCHE (classe .searching ajoutée sur #app quand le
+     champ de recherche a le focus). Objectif : voir en même temps
+     ce qu'on tape, le clavier et les résultats. On masque tout le
+     haut (titre, stats, onglets) et on épingle une grande barre de
+     recherche pleine largeur en haut de l'écran.
+     ============================================================ */
+  #app.searching .app-header { display: none; }
+  #app.searching .kt-controls {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--paper);
+    padding: 12px 16px 10px;
+    margin: 0 0 4px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  }
+  /* on cache tri/filtre/vue pendant la recherche pour laisser le champ
+     occuper toute la largeur et rester bien lisible */
+  #app.searching .sort-box,
+  #app.searching #filterToggleBtn,
+  #app.searching #viewModeToggleBtn { display: none; }
+  #app.searching .search-box { padding: 13px 14px; }
+  /* 16px : taille confortable ET seuil qui évite le zoom auto iOS */
+  #app.searching .search-box input { font-size: 16px; }

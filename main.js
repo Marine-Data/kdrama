@@ -1158,6 +1158,7 @@ function updateSearchResults(value) {
 
 export function render() {
   const root = document.getElementById("app");
+  root.classList.remove("searching");
   if (state.loading) {
     root.innerHTML = `<div class="loading-screen"><div class="app-seal motif-flower">${FLOWER_MOTIF_SVG}</div><p>Ouverture du carnet…</p></div>`;
     return;
@@ -1288,6 +1289,16 @@ export function render() {
 let headerScrolledState = false;
 function computeHeaderScrolled() {
   const y = window.scrollY;
+  // Anti-tremblement : sur une page peu remplie (ex. 3 dramas), replier le
+  // header retire ~210px de hauteur ; s'il ne reste alors plus assez à faire
+  // défiler, le navigateur ramène le scroll vers le haut, ce qui redéplie le
+  // header, qui rallonge la page… et ça oscille (le "tremblement"). On calcule
+  // la hauteur "dépliée" (stable quel que soit l'état courant) et on n'autorise
+  // le repli que s'il reste une marge de défilement confortable une fois replié.
+  const HEADER_DELTA = 210;
+  const expandedScrollHeight = document.documentElement.scrollHeight + (headerScrolledState ? HEADER_DELTA : 0);
+  const marge = expandedScrollHeight - window.innerHeight - HEADER_DELTA;
+  if (marge < 120) { headerScrolledState = false; return false; }
   if (y > 60) headerScrolledState = true;
   else if (y < 20) headerScrolledState = false;
   return headerScrolledState;
@@ -1391,8 +1402,16 @@ function attachListeners() {
       searchInput.focus();
       searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
     }
-    searchInput.addEventListener("focus", () => { state.searchHadFocus = true; });
-    searchInput.addEventListener("blur", () => { state.searchHadFocus = false; });
+    searchInput.addEventListener("focus", () => {
+      state.searchHadFocus = true;
+      // Mode recherche : masque le haut de l'app et épingle la barre en
+      // haut, pour voir en même temps le champ, le clavier et les films.
+      document.getElementById("app").classList.add("searching");
+    });
+    searchInput.addEventListener("blur", () => {
+      state.searchHadFocus = false;
+      document.getElementById("app").classList.remove("searching");
+    });
   }
   const clearSearch = document.getElementById("clearSearch");
   if (clearSearch) clearSearch.addEventListener("click", () => setState({ query: "" }));
