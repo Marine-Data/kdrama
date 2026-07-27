@@ -13,6 +13,7 @@ import { finishQuiz, loadLeaderboardQuiz } from './quiz.js';
 import { loadOstLeaderboard } from './ost.js';
 import { getTierlistLikeCount } from './tierlist.js';
 import { markAsWatched, uploadAvatar, renderTrendsSections } from './catalogue.js';
+import { activerNotificationsPush, desactiverNotificationsPush, dismissPushPrompt, handleLogout } from './auth.js';
 
 export function renderRechercheProfilResultats() {
   if (state.rechercheProfilLoading) return `<p class="tr-note">Recherche…</p>`;

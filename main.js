@@ -2,8 +2,8 @@ import { renderDeezerMiniPlayer, loadOstLeaderboard, attachDeezerListeners, rend
 import { initAuth, renderAuthModal, attachAuthModalListeners, loadProfilCourant, renderPushPromptBanner } from './auth.js';
 import { renderTierlistViewerModal, attachTierlistViewerListeners, loadTierlists, getTierlistLikeCount, renderTierlistsView, renderTierlistBuilder, renderTierlistFormSheet, attachTierlistListeners } from './tierlist.js';
 import { loadQuizDuJour, loadLeaderboardQuiz, renderQuizView, renderHistoriqueQuizModal, attachQuizListeners } from './quiz.js';
-import { loadCommunaute, chargerMaCollectionActeurs, chargerNotificationsSuggestions, chargerNotificationsAbonnements, chargerNotificationsInteractions, renderCommunauteView, renderAbonnementsView, renderJeuxView, renderProfilPublicView, renderComposerSheet, renderRechercheProfilModal, attachCommunauteListeners, ajouterDepuisSuggestion, envoyerSuggestion, fermerCollection, fermerNotifSuggestions, fermerRechercheProfil, fermerSuggererA, getNotificationsNonLues, lancerRechercheProfilDebounced, marquerAbonnementsVus, marquerInteractionsVues, marquerSuggestionsVues, openComposer, openProfilPublic, ouvrirNotifSuggestions, ouvrirSuggererA } from './social.js';
-import { openNew, openEdit, closeForm, updateDraft, attachCastingResultListeners, renderCastingSelector, handlePosterUpload, removePoster, saveDraft, searchPosterOnline, searchPersonPhotoOnline, getTmdbApiKey, setTmdbApiKey, demanderCleTmdbSiAbsente, rechercherSurTmdb, appliquerResultatTmdb, importerCatalogueTmdb, renderTmdbKeyModal, renderTmdbSearchResults, shareDrama, deleteEntry, openNewAVoir, openEditAVoir, closeAVoirForm, updateAVoirDraft, handleAVoirPosterUpload, removeAVoirPoster, saveAVoirDraft, deleteAVoirEntry, exportData, surpriseMe, markAsWatched, uploadAvatar, uploadPersonPhoto, enregistrerModificationPersonne, getFilteredEntries, getAvailableDecades, getStats, renderListView, renderGridContent, renderYearDramaList, renderTrendsNavDrawer, attachTrendsNavDrawerListeners, renderTrendsView, renderTrendsSections, renderAVoirView, renderAVoirFormSheet, renderFormSheet, renderPersonModal, ajouterPersonneAuCasting, retirerPersonneDuCasting, renderDramaModal } from './catalogue.js';
+import { ouvrirCadeau, fermerCadeau, ouvrirCollection, ouvrirRechercheProfil, loadCommunaute, chargerMaCollectionActeurs, chargerNotificationsSuggestions, chargerNotificationsAbonnements, chargerNotificationsInteractions, renderCommunauteView, renderAbonnementsView, renderJeuxView, renderProfilPublicView, renderComposerSheet, renderRechercheProfilModal, attachCommunauteListeners, ajouterDepuisSuggestion, envoyerSuggestion, fermerCollection, fermerNotifSuggestions, fermerRechercheProfil, fermerSuggererA, getNotificationsNonLues, lancerRechercheProfilDebounced, marquerAbonnementsVus, marquerInteractionsVues, marquerSuggestionsVues, openComposer, openProfilPublic, ouvrirNotifSuggestions, ouvrirSuggererA } from './social.js';
+import { openNew, openEdit, closeForm, updateDraft, attachCastingResultListeners, renderCastingSelector, handlePosterUpload, removePoster, saveDraft, searchPosterOnline, searchPersonPhotoOnline, getTmdbApiKey, setTmdbApiKey, demanderCleTmdbSiAbsente, rechercherSurTmdb, appliquerResultatTmdb, importerCatalogueTmdb, renderTmdbKeyModal, renderTmdbSearchResults, shareDrama, deleteEntry, openNewAVoir, openEditAVoir, closeAVoirForm, updateAVoirDraft, handleAVoirPosterUpload, removeAVoirPoster, saveAVoirDraft, deleteAVoirEntry, exportData, surpriseMe, markAsWatched, uploadAvatar, uploadPersonPhoto, enregistrerModificationPersonne, getFilteredEntries, getAvailableDecades, getStats, renderListView, renderListResults, renderGridContent, renderYearDramaList, renderTrendsNavDrawer, attachTrendsNavDrawerListeners, renderTrendsView, renderTrendsSections, renderAVoirView, renderAVoirFormSheet, renderFormSheet, renderPersonModal, ajouterPersonneAuCasting, retirerPersonneDuCasting, renderDramaModal } from './catalogue.js';
 
 // ============== CONFIG ==============
 const SUPABASE_URL = "https://osqyczwawbbwjwaubtvc.supabase.co";
@@ -1084,6 +1084,78 @@ function renderFabAddBtn() {
   return "";
 }
 
+// Écouteurs des éléments de liste (cartes, cellules grille, boutons
+// modifier/partager/supprimer), extraits pour être ré-attachés seuls
+// après un rafraîchissement partiel des résultats (recherche en direct).
+function attachListItemListeners() {
+  document.querySelectorAll("[data-grid-id]").forEach((cell) => {
+    cell.addEventListener("click", () => {
+      const source = isLoggedIn() ? state.mesEntries : state.entries;
+      const d = source.find((x) => String(x.id) === cell.dataset.gridId);
+      if (d) setState({ dramaModal: d.titre });
+    });
+  });
+  document.querySelectorAll("[data-share-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const source = isLoggedIn() ? state.mesEntries : state.entries;
+      const d = source.find((x) => String(x.id) === btn.dataset.shareId);
+      if (d) shareDrama(d);
+    });
+  });
+
+  document.querySelectorAll("[data-card-id]").forEach((card) => {
+    card.addEventListener("click", (e) => {
+      if (e.target.closest("[data-stop-propagation]")) return;
+      const id = card.dataset.cardId;
+      setState({ expandedId: state.expandedId === id ? null : id });
+    });
+  });
+  document.querySelectorAll("[data-edit-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const d = state.mesEntries.find((x) => String(x.id) === btn.dataset.editId);
+      if (d) openEdit(d);
+    });
+  });
+  document.querySelectorAll("[data-ask-delete-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => { e.stopPropagation(); setState({ confirmDeleteId: btn.dataset.askDeleteId }); });
+  });
+  document.querySelectorAll("[data-confirm-delete-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => { e.stopPropagation(); deleteEntry(btn.dataset.confirmDeleteId); });
+  });
+  document.querySelectorAll("[data-goto-auth-card]").forEach((btn) => {
+    btn.addEventListener("click", (e) => { e.stopPropagation(); setState({ showAuthModal: true }); });
+  });
+}
+
+// Recherche en direct : met à jour l'état et ne reconstruit QUE la liste
+// des résultats, sans toucher au champ de saisie (clavier et curseur ne
+// bougent plus, l'app ne "saute" plus). Toute erreur retombe sur le rendu
+// complet classique — jamais de blocage.
+function updateSearchResults(value) {
+  try {
+    state.query = value;
+    const container = document.getElementById("listResults");
+    if (!container) { setState({ query: value }); return; }
+    container.innerHTML = renderListResults(getFilteredEntries());
+    const searchBox = document.querySelector(".search-box");
+    if (searchBox) {
+      let clear = document.getElementById("clearSearch");
+      if (value && !clear) {
+        clear = document.createElement("button");
+        clear.className = "clear-q"; clear.id = "clearSearch"; clear.textContent = "✕";
+        clear.addEventListener("click", () => setState({ query: "" }));
+        searchBox.appendChild(clear);
+      } else if (!value && clear) { clear.remove(); }
+    }
+    attachListItemListeners();
+  } catch (e) {
+    console.error("Recherche en direct impossible, rendu complet de secours", e);
+    setState({ query: value });
+  }
+}
+
 export function render() {
   const root = document.getElementById("app");
   if (state.loading) {
@@ -1314,7 +1386,7 @@ function attachListeners() {
   // List view
   const searchInput = document.getElementById("searchInput");
   if (searchInput) {
-    searchInput.addEventListener("input", (e) => setState({ query: e.target.value }));
+    searchInput.addEventListener("input", (e) => updateSearchResults(e.target.value));
     if (state.searchHadFocus) {
       searchInput.focus();
       searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
@@ -1340,45 +1412,8 @@ function attachListeners() {
   const clearFiltersBtn = document.getElementById("clearFiltersBtn");
   if (clearFiltersBtn) clearFiltersBtn.addEventListener("click", () => setState({ filterDecade: "", filterMinNote: "", filterScenariste: "" }));
 
-  document.querySelectorAll("[data-grid-id]").forEach((cell) => {
-    cell.addEventListener("click", () => {
-      const source = isLoggedIn() ? state.mesEntries : state.entries;
-      const d = source.find((x) => String(x.id) === cell.dataset.gridId);
-      if (d) setState({ dramaModal: d.titre });
-    });
-  });
-  document.querySelectorAll("[data-share-id]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const source = isLoggedIn() ? state.mesEntries : state.entries;
-      const d = source.find((x) => String(x.id) === btn.dataset.shareId);
-      if (d) shareDrama(d);
-    });
-  });
+  attachListItemListeners();
 
-  document.querySelectorAll("[data-card-id]").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      if (e.target.closest("[data-stop-propagation]")) return;
-      const id = card.dataset.cardId;
-      setState({ expandedId: state.expandedId === id ? null : id });
-    });
-  });
-  document.querySelectorAll("[data-edit-id]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const d = state.mesEntries.find((x) => String(x.id) === btn.dataset.editId);
-      if (d) openEdit(d);
-    });
-  });
-  document.querySelectorAll("[data-ask-delete-id]").forEach((btn) => {
-    btn.addEventListener("click", (e) => { e.stopPropagation(); setState({ confirmDeleteId: btn.dataset.askDeleteId }); });
-  });
-  document.querySelectorAll("[data-confirm-delete-id]").forEach((btn) => {
-    btn.addEventListener("click", (e) => { e.stopPropagation(); deleteEntry(btn.dataset.confirmDeleteId); });
-  });
-  document.querySelectorAll("[data-goto-auth-card]").forEach((btn) => {
-    btn.addEventListener("click", (e) => { e.stopPropagation(); setState({ showAuthModal: true }); });
-  });
   const goToAuthFromListBtn = document.getElementById("goToAuthFromListBtn");
   if (goToAuthFromListBtn) goToAuthFromListBtn.addEventListener("click", () => setState({ showAuthModal: true }));
   const goToAuthFromTrendsBtn = document.getElementById("goToAuthFromTrendsBtn");

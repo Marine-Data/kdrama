@@ -4,7 +4,7 @@
 // de l'app shell pour un démarrage plus rapide et un minimum de
 // résilience hors-ligne.
 
-const CACHE_NAME = "dramatic-cache-v6";
+const CACHE_NAME = "dramatic-cache-v7";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -929,7 +929,17 @@ export function renderListView() {
       </button>
     </div>` : ""}
   </div>` : ""}
-  <main class="kt-list">`;
+  <div id="listResults">${renderListResults(filtered)}</div>`;
+  return html;
+}
+
+// Résultats de la liste isolés pour pouvoir être rafraîchis seuls
+// (recherche en direct) sans reconstruire les contrôles ni le champ de
+// saisie — voir updateSearchResults() dans main.js.
+export function renderListResults(filtered) {
+  const connecte = isLoggedIn();
+  let html = `<main class="kt-list">`;
+
 
   if (filtered.length === 0) {
     html += connecte
