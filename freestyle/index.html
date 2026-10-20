@@ -56,6 +56,12 @@ h1 span{color:var(--accent)}
 details.past{margin-top:30px}
 details.past summary{cursor:pointer;color:var(--muted);font-weight:600;padding:8px 0}
 details.past .card{opacity:.6;box-shadow:none}
+.edit{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left;cursor:pointer;white-space:inherit;line-height:inherit;letter-spacing:inherit}
+.edit::after{content:" ✎";font-size:.7em;opacity:.4}
+.edit.time{display:inline-block;background:var(--soft);padding:2px 9px;border-radius:8px;font-weight:700;font-size:.85rem;min-height:28px}
+.card h3 .edit{display:inline;font-family:inherit;font-weight:inherit}
+.meta .edit{text-decoration:underline;text-decoration-color:var(--sun);text-decoration-thickness:2px}
+.map{text-decoration:none;margin-left:4px}
 .tbd{font:inherit;font-weight:700;font-size:.85rem;border:2px dashed var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:3px 10px;cursor:pointer;min-height:32px}
 .tbd.lieu{font-weight:600;margin-top:4px}
 /* sondage de dates */
@@ -157,13 +163,17 @@ textarea{resize:vertical;min-height:70px}
 <!-- Compléter une activité -->
 <dialog id="editDlg">
   <form id="editForm">
-    <h2 id="eTitle">Compléter</h2>
+    <h2>Modifier l'activité</h2>
+    <label for="eTitre">Activité</label>
+    <input id="eTitre" maxlength="120" required>
     <div class="two" id="eWhen">
       <div><label for="eDate">Date</label><input type="date" id="eDate"></div>
       <div><label for="eHeure">Heure</label><input type="time" id="eHeure"></div>
     </div>
     <label for="eLieu">Lieu</label>
     <input id="eLieu" maxlength="200" placeholder="Adresse ou nom du lieu">
+    <label for="eDesc">Détails</label>
+    <textarea id="eDesc" maxlength="600" placeholder="Niveau, matériel, programme…"></textarea>
     <p class="err" id="eErr" role="alert"></p>
     <div class="actions">
       <button class="btn" type="button" id="eCancel">Annuler</button>
@@ -223,13 +233,21 @@ async function load() {
 
 function lieuHtml(a) {
   return a.lieu
-    ? `<div class="meta">📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener">${esc(a.lieu)}</a></div>`
+    ? `<div class="meta">📍 <button class="edit" data-act="edit" data-focus="lieu" data-id="${a.id}">${esc(a.lieu)}</button> <a class="map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener" aria-label="Voir sur la carte">🗺️</a></div>`
     : `<div><button class="tbd lieu" data-act="edit" data-focus="lieu" data-id="${a.id}">📍 Lieu à confirmer ✎</button></div>`;
 }
 function timeHtml(a) {
   return a.heure
-    ? `<span class="time">${esc(timeLabel(a))}</span>`
+    ? `<button class="edit time" data-act="edit" data-focus="heure" data-id="${a.id}">${esc(timeLabel(a))}</button>`
     : `<button class="tbd" data-act="edit" data-focus="heure" data-id="${a.id}">Horaire à confirmer ✎</button>`;
+}
+function titreHtml(a) {
+  return `<h3><button class="edit" data-act="edit" data-focus="titre" data-id="${a.id}">${esc(a.titre)}</button></h3>`;
+}
+function descHtml(a) {
+  return a.description
+    ? `<p class="desc"><button class="edit" data-act="edit" data-focus="desc" data-id="${a.id}">${esc(a.description)}</button></p>`
+    : `<div><button class="tbd lieu" data-act="edit" data-focus="desc" data-id="${a.id}">+ Ajouter des détails</button></div>`;
 }
 
 function card(a) {
@@ -242,10 +260,10 @@ function card(a) {
   const canDel = me && norm(a.organisateur) === norm(me);
   return `<article class="card ${mine ? 'me' : ''}">
     ${timeHtml(a)}
-    <h3>${esc(a.titre)}</h3>
+    ${titreHtml(a)}
     ${lieu}
     <div class="meta">Proposé par ${esc(a.organisateur)}</div>
-    ${a.description ? `<p class="desc">${esc(a.description)}</p>` : ''}
+    ${descHtml(a)}
     <div class="people">${people}</div>
     <div class="row">
       <button class="btn small ${mine ? '' : 'in'}" data-act="${mine ? 'leave' : 'join'}" data-id="${a.id}">${mine ? 'Je ne viens plus' : '✋ Je viens'}</button>
@@ -277,10 +295,10 @@ function pollCard(a, today) {
   }).join('');
   return `<article class="card poll">
     <span class="badge">📅 Date à choisir</span>
-    <h3>${esc(a.titre)}</h3>
+    ${titreHtml(a)}
     ${lieu}
     <div class="meta">Proposé par ${esc(a.organisateur)}</div>
-    ${a.description ? `<p class="desc">${esc(a.description)}</p>` : ''}
+    ${descHtml(a)}
     <p class="hint">Touche les dates où tu es dispo.</p>
     ${rows}
     ${isOrga ? `<div class="row"><button class="del" data-act="del" data-id="${a.id}">Supprimer</button></div>` : ''}
@@ -375,15 +393,16 @@ function openEdit(id, focus) {
   $('eWhen').hidden = poll;
   $('eDate').required = !poll; $('eDate').min = todayStr();
   $('eDate').value = a.date || ''; $('eHeure').value = a.heure ? a.heure.slice(0, 5) : '';
-  $('eLieu').value = a.lieu || ''; $('eTitle').textContent = a.titre; $('eErr').textContent = '';
+  $('eLieu').value = a.lieu || ''; $('eTitre').value = a.titre; $('eDesc').value = a.description || ''; $('eErr').textContent = '';
   $('editDlg').showModal();
-  $(focus === 'lieu' || poll ? 'eLieu' : focus === 'heure' ? 'eHeure' : 'eDate').focus();
+  const target = {titre: 'eTitre', desc: 'eDesc', lieu: 'eLieu', heure: 'eHeure', date: 'eDate'}[focus] || 'eTitre';
+  $(poll && (target === 'eHeure' || target === 'eDate') ? 'eLieu' : target).focus();
 }
 $('eCancel').onclick = () => $('editDlg').close();
 $('editForm').onsubmit = async e => {
   e.preventDefault();
   const a = editing, poll = a.statut === 'sondage';
-  const body = {lieu: $('eLieu').value.trim() || null};
+  const body = {titre: $('eTitre').value.trim(), lieu: $('eLieu').value.trim() || null, description: $('eDesc').value.trim() || null};
   if (!poll) { body.date = $('eDate').value; body.heure = $('eHeure').value || null; }
   $('eSubmit').disabled = true;
   try {
