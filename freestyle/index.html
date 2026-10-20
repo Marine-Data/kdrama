@@ -241,8 +241,8 @@ async function load() {
 
 function lieuHtml(a) {
   return a.lieu
-    ? `<div class="meta">📍 <button class="edit" data-act="edit" data-focus="lieu" data-id="${a.id}">${esc(a.lieu)}</button> <a class="map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener" aria-label="Voir sur la carte">🗺️</a></div>`
-    : `<div><button class="tbd lieu" data-act="edit" data-focus="lieu" data-id="${a.id}">📍 Lieu à confirmer ✎</button></div>`;
+    ? `<div class="meta"><button class="edit" data-act="edit" data-focus="lieu" data-id="${a.id}">${esc(a.lieu)}</button> <a class="map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener" aria-label="Voir sur la carte">🗺️</a></div>`
+    : `<div><button class="tbd lieu" data-act="edit" data-focus="lieu" data-id="${a.id}">Lieu à confirmer ✎</button></div>`;
 }
 function timeHtml(a) {
   return a.heure
