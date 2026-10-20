@@ -170,6 +170,14 @@ textarea{resize:vertical;min-height:70px}
       <div><label for="eDate">Date</label><input type="date" id="eDate"></div>
       <div><label for="eHeure">Heure</label><input type="time" id="eHeure"></div>
     </div>
+    <div id="eMultiWrap">
+      <label class="toggle"><input type="checkbox" id="eMulti"> Proposer plusieurs dates à la place</label>
+      <div id="eSlots" hidden>
+        <div id="eSlotRows"></div>
+        <button class="btn small" type="button" id="eAddSlot">+ Ajouter une date</button>
+        <p class="hint">Les personnes déjà inscrites sont comptées dispo sur la date actuelle.</p>
+      </div>
+    </div>
     <label for="eLieu">Lieu</label>
     <input id="eLieu" maxlength="200" placeholder="Adresse ou nom du lieu">
     <label for="eDesc">Détails</label>
@@ -391,6 +399,7 @@ function openEdit(id, focus) {
   editing = a;
   const poll = a.statut === 'sondage';
   $('eWhen').hidden = poll;
+  $('eMulti').checked = false; $('eSlots').hidden = true; $('eSlotRows').innerHTML = ''; $('eMultiWrap').hidden = poll;
   $('eDate').required = !poll; $('eDate').min = todayStr();
   $('eDate').value = a.date || ''; $('eHeure').value = a.heure ? a.heure.slice(0, 5) : '';
   $('eLieu').value = a.lieu || ''; $('eTitre').value = a.titre; $('eDesc').value = a.description || ''; $('eErr').textContent = '';
@@ -399,13 +408,36 @@ function openEdit(id, focus) {
   $(poll && (target === 'eHeure' || target === 'eDate') ? 'eLieu' : target).focus();
 }
 $('eCancel').onclick = () => $('editDlg').close();
+$('eMulti').onchange = e => {
+  const on = e.target.checked;
+  $('eSlots').hidden = !on; $('eWhen').hidden = on; $('eDate').required = !on;
+  if (on && !$('eSlotRows').children.length) {
+    addSlotRow(editing.date || '', editing.heure ? editing.heure.slice(0, 5) : '', $('eSlotRows'));
+    addSlotRow('', '', $('eSlotRows'));
+  }
+};
+$('eAddSlot').onclick = () => addSlotRow('', '', $('eSlotRows'));
 $('editForm').onsubmit = async e => {
   e.preventDefault();
-  const a = editing, poll = a.statut === 'sondage';
+  const a = editing, poll = a.statut === 'sondage', multi = $('eMulti').checked;
   const body = {titre: $('eTitre').value.trim(), lieu: $('eLieu').value.trim() || null, description: $('eDesc').value.trim() || null};
-  if (!poll) { body.date = $('eDate').value; body.heure = $('eHeure').value || null; }
+  if (!poll && !multi) { body.date = $('eDate').value; body.heure = $('eHeure').value || null; }
+  let slots = [];
+  if (multi) {
+    slots = readSlots($('eSlotRows'));
+    if (slots.length < 2) { $('eErr').textContent = 'Propose au moins deux dates différentes.'; return; }
+    Object.assign(body, {statut: 'sondage', date: null, heure: null});
+  }
   $('eSubmit').disabled = true;
   try {
+    if (multi) {
+      const cr = await api('/ft_creneaux', {method: 'POST', body: JSON.stringify(slots.map(s => ({...s, activite_id: a.id}))), headers: {Prefer: 'return=representation'}});
+      const orig = c => c.date === a.date && (c.heure ? c.heure.slice(0, 5) : null) === (a.heure ? a.heure.slice(0, 5) : null);
+      const origSlot = cr.find(orig);
+      const votes = origSlot ? (a.ft_inscriptions || []).map(i => ({creneau_id: origSlot.id, prenom: i.prenom})) : [];
+      if (votes.length) await api('/ft_votes', {method: 'POST', body: JSON.stringify(votes), headers: {Prefer: 'return=minimal'}});
+      await api('/ft_inscriptions?activite_id=eq.' + a.id, {method: 'DELETE'});
+    }
     await api('/ft_activites?id=eq.' + a.id, {method: 'PATCH', body: JSON.stringify(body), headers: {Prefer: 'return=minimal'}});
     $('editDlg').close(); toast('C’est à jour ✅'); load();
   } catch (err) { $('eErr').textContent = 'Impossible d’enregistrer pour le moment. Réessaie.'; }
@@ -417,11 +449,19 @@ const SUGGS = ['Natation 🏊', 'Running 🏃', 'Street workout 💪', 'Salle de
 $('sugg').innerHTML = SUGGS.map(s => `<button type="button">${esc(s)}</button>`).join('');
 $('sugg').onclick = e => { const b = e.target.closest('button'); if (b) { $('fTitre').value = b.textContent; $('fTitre').focus(); } };
 
-function addSlotRow(date = '', heure = '') {
+function addSlotRow(date = '', heure = '', box = $('slotRows')) {
   const r = document.createElement('div'); r.className = 'srow';
   r.innerHTML = `<input type="date" class="sd" min="${todayStr()}" value="${date}" aria-label="Date"><input type="time" class="sh" value="${heure}" aria-label="Heure"><button type="button" aria-label="Retirer cette date">✕</button>`;
-  r.querySelector('button').onclick = () => { if ($('slotRows').children.length > 2) r.remove(); };
-  $('slotRows').appendChild(r);
+  r.querySelector('button').onclick = () => { if (box.children.length > 2) r.remove(); };
+  box.appendChild(r);
+}
+function readSlots(box) {
+  const seen = new Set(), slots = [];
+  [...box.children].forEach(r => {
+    const d = r.querySelector('.sd').value, h = r.querySelector('.sh').value || null;
+    if (d && !seen.has(d + '|' + h)) { seen.add(d + '|' + h); slots.push({date: d, heure: h}); }
+  });
+  return slots;
 }
 function setMulti(on) {
   $('fixedWhen').hidden = on; $('pollWhen').hidden = !on;
