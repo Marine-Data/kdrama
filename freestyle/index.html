@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fff4e8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Freestyle">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Freestyle Tricks – Planning</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,6 +71,10 @@ details.past .card{opacity:.6;box-shadow:none}
 .map{text-decoration:none;margin-left:4px}
 .tbd{font:inherit;font-weight:700;font-size:.85rem;border:2px dashed var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:3px 10px;cursor:pointer;min-height:32px}
 .tbd.lieu{font-weight:600;margin-top:4px}
+.appbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.appbar .btn{flex:1 1 auto}
+#appbar .hint{margin:8px 0 2px}
+.steps{margin:12px 0 0 20px;display:grid;gap:8px}
 /* sondage de dates */
 .card.poll{background:#fffbea}
 .badge{display:inline-block;background:var(--sun);border:2px solid var(--line);border-radius:8px;padding:1px 9px;font-weight:700;font-size:.8rem}
@@ -112,6 +123,7 @@ textarea{resize:vertical;min-height:70px}
     <div class="who" id="who"></div>
   </header>
 
+  <div id="appbar"></div>
   <button class="btn primary big" id="addBtn">+ Proposer une activité</button>
   <div id="list" aria-live="polite"></div>
 </main>
@@ -158,6 +170,19 @@ textarea{resize:vertical;min-height:70px}
       <button class="btn primary" type="submit" id="addSubmit">Publier</button>
     </div>
   </form>
+</dialog>
+
+<!-- Installer sur iPhone -->
+<dialog id="iosDlg">
+  <h2>Installer sur iPhone</h2>
+  <p class="meta">Sur iPhone, les notifications ne marchent qu'une fois l'appli ajoutée à l'écran d'accueil.</p>
+  <ol class="steps">
+    <li>Ouvre ce lien dans <b>Safari</b> (depuis WhatsApp : ⋯ puis « Ouvrir dans Safari »).</li>
+    <li>Touche le bouton <b>Partager</b> ⬆️ en bas de l'écran.</li>
+    <li>Choisis <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
+    <li>Ouvre l'appli <b>Freestyle</b> depuis ton écran d'accueil et touche « Activer les notifications ».</li>
+  </ol>
+  <div class="actions"><button class="btn primary" type="button" id="iosClose">Compris</button></div>
 </dialog>
 
 <!-- Compléter une activité -->
@@ -330,7 +355,7 @@ function render() {
   if (past.length) html += `<details class="past"><summary>Activités passées (${past.length})</summary>${past.map(card).join('')}</details>`;
   $('list').innerHTML = html;
   $('who').innerHTML = me ? `Tu es <button id="chg" title="Changer de prénom">${esc(me)} ✎</button>` : '';
-  const chg = $('chg'); if (chg) chg.onclick = () => askName();
+  const chg = $('chg'); if (chg) chg.onclick = () => askName().then(v => v && refreshPushState());
 }
 
 function askName() {
@@ -512,6 +537,82 @@ $('addForm').onsubmit = async e => {
   }
   btn.disabled = false;
 };
+
+/* Appli installable + notifications push */
+const VAPID_PUBLIC = 'BAO4cgcv8VL1tm6fKUjmq3g2saho_h5lMdj6tvmatvBF7WAZctesCVaUNZGfpOI9258QeyW3PhFE-EOWPyyLooI';
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+const pushOK = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+let deferredInstall = null, pushOn = false;
+
+function b64ToBytes(s) {
+  const p = '='.repeat((4 - s.length % 4) % 4), b = (s + p).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(b), c => c.charCodeAt(0));
+}
+function renderAppBar() {
+  const needIOS = isIOS && !isStandalone;
+  const parts = [];
+  if (!isStandalone && (deferredInstall || needIOS)) parts.push('<button class="btn small" data-bar="install">📲 Installer l’appli</button>');
+  if (pushOK && !needIOS) parts.push(pushOn
+    ? '<button class="btn small" data-bar="push-off">🔔 Notifications activées · désactiver</button>'
+    : '<button class="btn small in" data-bar="push-on">🔔 Activer les notifications</button>');
+  $('appbar').innerHTML = parts.length
+    ? `<div class="appbar">${parts.join('')}</div><p class="hint">${needIOS
+        ? 'Sur iPhone, installe d’abord l’appli pour recevoir les notifications.'
+        : 'Une alerte quand une activité est proposée ou modifiée, et un rappel 2 h avant celles où tu es inscrit·e.'}</p>`
+    : '';
+}
+async function registerSub(sub) {
+  const j = sub.toJSON();
+  await api('/rpc/ft_push_register', {method: 'POST', body: JSON.stringify({p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_prenom: me})});
+}
+async function refreshPushState() {
+  pushOn = false;
+  if (pushOK && Notification.permission === 'granted') {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const s = await reg.pushManager.getSubscription();
+      pushOn = !!s;
+      if (s && me) registerSub(s).catch(() => {});
+    } catch (e) {}
+  }
+  renderAppBar();
+}
+async function enablePush() {
+  if (!(await ensureName())) return;
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast('Notifications bloquées : autorise-les dans les réglages du navigateur'); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) ||
+      (await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC)}));
+    await registerSub(sub);
+    pushOn = true; renderAppBar(); toast('Notifications activées 🔔');
+  } catch (e) { toast('Impossible d’activer les notifications sur cet appareil'); }
+}
+async function disablePush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const s = await reg.pushManager.getSubscription();
+    if (s) { await api('/rpc/ft_push_unregister', {method: 'POST', body: JSON.stringify({p_endpoint: s.endpoint})}).catch(() => {}); await s.unsubscribe(); }
+    pushOn = false; renderAppBar(); toast('Notifications désactivées');
+  } catch (e) { toast('Oups, réessaie.'); }
+}
+$('appbar').addEventListener('click', async e => {
+  const b = e.target.closest('[data-bar]'); if (!b) return;
+  const a = b.dataset.bar;
+  if (a === 'install') {
+    if (deferredInstall) { deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch (e) {} deferredInstall = null; renderAppBar(); }
+    else $('iosDlg').showModal();
+  } else if (a === 'push-on') enablePush();
+  else if (a === 'push-off') disablePush();
+});
+$('iosClose').onclick = () => $('iosDlg').close();
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; renderAppBar(); });
+window.addEventListener('appinstalled', () => { deferredInstall = null; renderAppBar(); });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+renderAppBar();
+refreshPushState();
 
 load();
 setInterval(() => { if (!document.hidden && !document.querySelector('dialog[open]')) load(); }, 20000);
