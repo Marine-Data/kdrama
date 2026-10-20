@@ -64,7 +64,13 @@ details.past{margin-top:30px}
 details.past summary{cursor:pointer;color:var(--muted);font-weight:600;padding:8px 0}
 details.past .card{opacity:.6;box-shadow:none}
 .edit{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left;cursor:pointer;white-space:inherit;line-height:inherit;letter-spacing:inherit}
-.edit::after{content:" ✎";font-size:.7em;opacity:.4}
+.more{margin-top:10px}
+.more summary{cursor:pointer;color:var(--muted);font-size:.88rem;font-weight:600;list-style:none;padding:6px 0}
+.more summary::-webkit-details-marker{display:none}
+.more summary::after{content:" ▾"}
+.more[open] summary::after{content:" ▴"}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.btn.danger{color:#b3261e}
 .edit.time{display:inline-block;background:var(--soft);padding:2px 9px;border-radius:8px;font-weight:700;font-size:.85rem;min-height:28px}
 .card h3 .edit{display:inline;font-family:inherit;font-weight:inherit}
 .meta .edit{text-decoration:underline;text-decoration-color:var(--sun);text-decoration-thickness:2px}
@@ -123,7 +129,7 @@ textarea{resize:vertical;min-height:70px}
 <main>
   <header>
     <h1>Freestyle <span>Tricks</span> 🤸‍♀️</h1>
-    <p class="sub">Propose une activité (une date, ou plusieurs selon les dispos) ou inscris-toi à celles des autres.</p>
+    <p class="sub">Propose une activité ou inscris-toi à celles des autres.</p>
     <div class="who" id="who"></div>
   </header>
 
@@ -295,6 +301,13 @@ async function load() {
   }
 }
 
+const openMore = new Set();
+function moreMenu(a, poll) {
+  const items = [['edit', '✎ Modifier'], ['share', '💬 Partager'],
+    ...(poll ? [] : [['ics', '📅 Mon agenda'], ['repeat', '🔁 Refaire']]), ['del', '🗑 Supprimer']];
+  return `<details class="more" data-id="${a.id}"${openMore.has(a.id) ? ' open' : ''}><summary>Plus d’options</summary><div class="menu">${
+    items.map(([k, l]) => `<button class="btn small${k === 'del' ? ' danger' : ''}" data-act="${k}" data-id="${a.id}">${l}</button>`).join('')}</div></details>`;
+}
 function lieuHtml(a) {
   return a.lieu
     ? `<div class="meta"><button class="edit" data-act="edit" data-focus="lieu" data-id="${a.id}">${esc(a.lieu)}</button> <a class="map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener" aria-label="Voir sur la carte">🗺️</a></div>`
@@ -321,7 +334,6 @@ function card(a) {
     ? ins.map(i => `<span class="chip ${me && norm(i.prenom) === norm(me) ? 'me' : ''}">${esc(i.prenom)}</span>`).join('')
     : '<span class="none">Personne pour l’instant, sois le premier·ère !</span>';
   const lieu = lieuHtml(a);
-  const canDel = true; // tout le monde peut supprimer (groupe fermé)
   return `<article class="card ${mine ? 'me' : ''}">
     ${timeHtml(a)}
     ${titreHtml(a)}
@@ -331,13 +343,8 @@ function card(a) {
     <div class="people">${people}</div>
     <div class="row">
       <button class="btn small ${mine ? '' : 'in'}" data-act="${mine ? 'leave' : 'join'}" data-id="${a.id}">${mine ? 'Je ne viens plus' : '✋ Je viens'}</button>
-      ${canDel ? `<button class="del" data-act="del" data-id="${a.id}">Supprimer</button>` : ''}
     </div>
-    <div class="row2">
-      <button class="btn small" data-act="share" data-id="${a.id}">💬 Partager</button>
-      <button class="btn small" data-act="ics" data-id="${a.id}">📅 Calendrier</button>
-      <button class="btn small full" data-act="repeat" data-id="${a.id}">🔁 Refaire cette activité</button>
-    </div>
+    ${moreMenu(a, false)}
   </article>`;
 }
 
@@ -370,8 +377,7 @@ function pollCard(a, today) {
     ${descHtml(a)}
     <p class="hint">Touche les dates où tu es dispo.</p>
     ${rows}
-    <div class="row2"><button class="btn small" data-act="share" data-id="${a.id}">💬 Partager pour voter</button></div>
-    <div class="row"><button class="del" data-act="del" data-id="${a.id}">Supprimer</button></div>
+    ${moreMenu(a, true)}
   </article>`;
 }
 
@@ -412,12 +418,14 @@ function askName() {
 }
 async function ensureName() { return me || (await askName()); }
 
+$('list').addEventListener('toggle', e => { const d = e.target; if (d.classList && d.classList.contains('more')) { d.open ? openMore.add(d.dataset.id) : openMore.delete(d.dataset.id); } }, true);
 $('list').addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const id = b.dataset.id, act = b.dataset.act;
   if (act === 'share') { shareActivity(id); return; }
   if (act === 'ics') { downloadIcs(id); return; }
   if (act === 'repeat') { repeatActivity(id); return; }
+  if (act === 'edit') { if (!(await ensureName())) return; openEdit(id, b.dataset.focus); return; }
   if (!(await ensureName())) return;
   if (act === 'edit') { openEdit(id, b.dataset.focus); return; }
   b.disabled = true;
