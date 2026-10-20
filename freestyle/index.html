@@ -113,6 +113,7 @@ textarea{resize:vertical;min-height:70px}
 .err{color:#b3261e;font-size:.88rem;margin-top:10px;min-height:1.2em}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--ink);color:#fff;
   padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+.toast-act{font:inherit;font-weight:800;color:var(--sun);background:none;border:0;text-decoration:underline;cursor:pointer;padding:6px 4px}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 </style>
@@ -239,10 +240,35 @@ async function api(path, opts = {}) {
   return r.status === 204 ? null : r.json().catch(() => null);
 }
 
-function toast(msg) {
+function toast(msg, action, ms) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  t.style.pointerEvents = action ? 'auto' : 'none';
+  if (action) {
+    const b = document.createElement('button'); b.className = 'toast-act'; b.textContent = action.label;
+    b.onclick = () => { t.classList.remove('show'); t.style.pointerEvents = 'none'; action.fn(); };
+    t.append(' ', b);
+  }
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.classList.remove('show'); t.style.pointerEvents = 'none'; }, ms || 2200);
 }
+
+/* Suppression avec « Annuler » pendant 6 secondes */
+const pendingDel = new Map();
+function scheduleDelete(id) {
+  const a = activities.find(x => x.id === id); if (!a) return;
+  activities = activities.filter(x => x.id !== id); render();
+  const t = setTimeout(async () => {
+    pendingDel.delete(id);
+    try { await api('/ft_activites?id=eq.' + id, {method: 'DELETE'}); } catch (e) { toast('Suppression impossible, réessaie.'); }
+    load();
+  }, 6000);
+  pendingDel.set(id, t);
+  toast('Activité supprimée', {label: 'Annuler', fn: () => { clearTimeout(t); pendingDel.delete(id); load(); }}, 6000);
+}
+// Si on ferme la page pendant les 6 secondes, la suppression est quand même envoyée.
+window.addEventListener('pagehide', () => {
+  pendingDel.forEach((t, id) => { clearTimeout(t); try { fetch(SB + '/ft_activites?id=eq.' + id, {method: 'DELETE', headers: H, keepalive: true}); } catch (e) {} });
+  pendingDel.clear();
+});
 
 function todayStr() {
   const d = new Date();
@@ -260,7 +286,8 @@ function timeLabel(a) {
 
 async function load() {
   try {
-    activities = await api('/ft_activites?select=*,ft_inscriptions(id,prenom,created_at),ft_creneaux(id,date,heure,ft_votes(id,prenom))&order=date.asc.nullslast,heure.asc.nullslast');
+    const rows = await api('/ft_activites?select=*,ft_inscriptions(id,prenom,created_at),ft_creneaux(id,date,heure,ft_votes(id,prenom))&order=date.asc.nullslast,heure.asc.nullslast');
+    activities = rows.filter(a => !pendingDel.has(a.id));
     render();
   } catch (e) {
     $('list').innerHTML = '<div class="empty">Impossible de charger le planning. Réessaie dans un instant.</div>';
@@ -417,9 +444,8 @@ $('list').addEventListener('click', async e => {
       await api('/ft_creneaux?activite_id=eq.' + aid, {method: 'DELETE'});
       toast('Date validée 🎉');
     } else if (act === 'del') {
-      if (!confirm('Supprimer cette activité pour tout le monde ?')) { b.disabled = false; return; }
-      await api('/ft_activites?id=eq.' + id, {method: 'DELETE'});
-      toast('Activité supprimée');
+      scheduleDelete(id);
+      return;
     }
   } catch (err) {
     if (err.status !== 409) toast('Oups, ça n’a pas marché. Réessaie.');
@@ -502,11 +528,8 @@ function openEdit(id, focus) {
 }
 $('eCancel').onclick = () => $('editDlg').close();
 $('eDel').onclick = async () => {
-  if (!editing || !confirm('Supprimer « ' + editing.titre + ' » pour tout le monde ?')) return;
-  try {
-    await api('/ft_activites?id=eq.' + editing.id, {method: 'DELETE'});
-    $('editDlg').close(); toast('Activité supprimée'); load();
-  } catch (err) { $('eErr').textContent = 'Impossible de supprimer pour le moment. Réessaie.'; }
+  if (!editing) return;
+  $('editDlg').close(); scheduleDelete(editing.id);
 };
 $('eMulti').onchange = e => {
   const on = e.target.checked;
