@@ -212,6 +212,7 @@ textarea{resize:vertical;min-height:70px}
       <button class="btn" type="button" id="eCancel">Annuler</button>
       <button class="btn primary" type="submit" id="eSubmit">Enregistrer</button>
     </div>
+    <p style="text-align:center;margin-top:10px"><button type="button" class="del" id="eDel">Supprimer cette activité</button></p>
   </form>
 </dialog>
 
@@ -290,7 +291,7 @@ function card(a) {
     ? ins.map(i => `<span class="chip ${me && norm(i.prenom) === norm(me) ? 'me' : ''}">${esc(i.prenom)}</span>`).join('')
     : '<span class="none">Personne pour l’instant, sois le premier·ère !</span>';
   const lieu = lieuHtml(a);
-  const canDel = me && norm(a.organisateur) === norm(me);
+  const canDel = true; // tout le monde peut supprimer (groupe fermé)
   return `<article class="card ${mine ? 'me' : ''}">
     ${timeHtml(a)}
     ${titreHtml(a)}
@@ -334,7 +335,7 @@ function pollCard(a, today) {
     ${descHtml(a)}
     <p class="hint">Touche les dates où tu es dispo.</p>
     ${rows}
-    ${isOrga ? `<div class="row"><button class="del" data-act="del" data-id="${a.id}">Supprimer</button></div>` : ''}
+    <div class="row"><button class="del" data-act="del" data-id="${a.id}">Supprimer</button></div>
   </article>`;
 }
 
@@ -433,6 +434,13 @@ function openEdit(id, focus) {
   $(poll && (target === 'eHeure' || target === 'eDate') ? 'eLieu' : target).focus();
 }
 $('eCancel').onclick = () => $('editDlg').close();
+$('eDel').onclick = async () => {
+  if (!editing || !confirm('Supprimer « ' + editing.titre + ' » pour tout le monde ?')) return;
+  try {
+    await api('/ft_activites?id=eq.' + editing.id, {method: 'DELETE'});
+    $('editDlg').close(); toast('Activité supprimée'); load();
+  } catch (err) { $('eErr').textContent = 'Impossible de supprimer pour le moment. Réessaie.'; }
+};
 $('eMulti').onchange = e => {
   const on = e.target.checked;
   $('eSlots').hidden = !on; $('eWhen').hidden = on; $('eDate').required = !on;
