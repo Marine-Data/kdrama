@@ -71,8 +71,9 @@ details.past .card{opacity:.6;box-shadow:none}
 .map{text-decoration:none;margin-left:4px}
 .tbd{font:inherit;font-weight:700;font-size:.85rem;border:2px dashed var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:3px 10px;cursor:pointer;min-height:32px}
 .tbd.lieu{font-weight:600;margin-top:4px}
-.row2{display:flex;gap:10px;margin-top:12px}
+.row2{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .row2 .btn{flex:1}
+.row2 .btn.full{flex-basis:100%}
 .appbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .appbar .btn{flex:1 1 auto}
 #appbar .hint{margin:8px 0 2px}
@@ -335,6 +336,7 @@ function card(a) {
     <div class="row2">
       <button class="btn small" data-act="share" data-id="${a.id}">💬 Partager</button>
       <button class="btn small" data-act="ics" data-id="${a.id}">📅 Calendrier</button>
+      <button class="btn small full" data-act="repeat" data-id="${a.id}">🔁 Refaire la semaine suivante</button>
     </div>
   </article>`;
 }
@@ -415,6 +417,7 @@ $('list').addEventListener('click', async e => {
   const id = b.dataset.id, act = b.dataset.act;
   if (act === 'share') { shareActivity(id); return; }
   if (act === 'ics') { downloadIcs(id); return; }
+  if (act === 'repeat') { repeatActivity(id); return; }
   if (!(await ensureName())) return;
   if (act === 'edit') { openEdit(id, b.dataset.focus); return; }
   b.disabled = true;
@@ -452,6 +455,27 @@ $('list').addEventListener('click', async e => {
   }
   load();
 });
+
+/* Refaire la semaine suivante (même activité, +7 jours, à la demande) */
+function addDays(s, n) {
+  const x = new Date(s + 'T12:00:00'); x.setDate(x.getDate() + n);
+  return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+}
+async function repeatActivity(id) {
+  const a = activities.find(x => x.id === id); if (!a || !a.date) return;
+  if (!(await ensureName())) return;
+  const today = todayStr();
+  let d = addDays(a.date, 7); while (d < today) d = addDays(d, 7);
+  const same = x => x.statut !== 'sondage' && x.date === d && norm(x.titre) === norm(a.titre) && (x.heure || '') === (a.heure || '');
+  if (activities.some(same)) { toast('Déjà prévu : ' + dayLabel(d)); return; }
+  if (!confirm('Proposer « ' + a.titre + ' » le ' + dayLabel(d) + (a.heure ? ' à ' + hm(a.heure) : '') + ' ?')) return;
+  try {
+    const [row] = await api('/ft_activites', {method: 'POST', headers: {Prefer: 'return=representation'}, body: JSON.stringify({
+      titre: a.titre, date: d, heure: a.heure, duree_fin: a.duree_fin, lieu: a.lieu, description: a.description, organisateur: me, statut: 'fixe'})});
+    await api('/ft_inscriptions', {method: 'POST', body: JSON.stringify({activite_id: row.id, prenom: me}), headers: {Prefer: 'return=minimal'}});
+    toast('Proposé : ' + dayLabel(d) + ' ✅'); load();
+  } catch (e) { toast('Oups, ça n’a pas marché. Réessaie.'); }
+}
 
 /* Partager sur WhatsApp */
 const pageUrl = () => location.origin + location.pathname.replace(/index\.html$/, '');
