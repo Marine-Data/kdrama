@@ -56,6 +56,8 @@ h1 span{color:var(--accent)}
 details.past{margin-top:30px}
 details.past summary{cursor:pointer;color:var(--muted);font-weight:600;padding:8px 0}
 details.past .card{opacity:.6;box-shadow:none}
+.tbd{font:inherit;font-weight:700;font-size:.85rem;border:2px dashed var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:3px 10px;cursor:pointer;min-height:32px}
+.tbd.lieu{font-weight:600;margin-top:4px}
 /* sondage de dates */
 .card.poll{background:#fffbea}
 .badge{display:inline-block;background:var(--sun);border:2px solid var(--line);border-radius:8px;padding:1px 9px;font-weight:700;font-size:.8rem}
@@ -152,6 +154,24 @@ textarea{resize:vertical;min-height:70px}
   </form>
 </dialog>
 
+<!-- Compléter une activité -->
+<dialog id="editDlg">
+  <form id="editForm">
+    <h2 id="eTitle">Compléter</h2>
+    <div class="two" id="eWhen">
+      <div><label for="eDate">Date</label><input type="date" id="eDate"></div>
+      <div><label for="eHeure">Heure</label><input type="time" id="eHeure"></div>
+    </div>
+    <label for="eLieu">Lieu</label>
+    <input id="eLieu" maxlength="200" placeholder="Adresse ou nom du lieu">
+    <p class="err" id="eErr" role="alert"></p>
+    <div class="actions">
+      <button class="btn" type="button" id="eCancel">Annuler</button>
+      <button class="btn primary" type="submit" id="eSubmit">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -201,17 +221,27 @@ async function load() {
   }
 }
 
+function lieuHtml(a) {
+  return a.lieu
+    ? `<div class="meta">📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener">${esc(a.lieu)}</a></div>`
+    : `<div><button class="tbd lieu" data-act="edit" data-focus="lieu" data-id="${a.id}">📍 Lieu à confirmer ✎</button></div>`;
+}
+function timeHtml(a) {
+  return a.heure
+    ? `<span class="time">${esc(timeLabel(a))}</span>`
+    : `<button class="tbd" data-act="edit" data-focus="heure" data-id="${a.id}">Horaire à confirmer ✎</button>`;
+}
+
 function card(a) {
   const ins = (a.ft_inscriptions || []).slice().sort((x, y) => x.created_at.localeCompare(y.created_at));
   const mine = me && ins.find(i => norm(i.prenom) === norm(me));
   const people = ins.length
     ? ins.map(i => `<span class="chip ${me && norm(i.prenom) === norm(me) ? 'me' : ''}">${esc(i.prenom)}</span>`).join('')
     : '<span class="none">Personne pour l’instant, sois le premier·ère !</span>';
-  const lieu = a.lieu
-    ? `<div class="meta">📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener">${esc(a.lieu)}</a></div>` : '';
+  const lieu = lieuHtml(a);
   const canDel = me && norm(a.organisateur) === norm(me);
   return `<article class="card ${mine ? 'me' : ''}">
-    <span class="time">${esc(timeLabel(a))}</span>
+    ${timeHtml(a)}
     <h3>${esc(a.titre)}</h3>
     ${lieu}
     <div class="meta">Proposé par ${esc(a.organisateur)}</div>
@@ -234,8 +264,7 @@ function pollCard(a, today) {
     .sort((x, y) => (x.date + (x.heure || '')).localeCompare(y.date + (y.heure || '')));
   const best = Math.max(0, ...slots.map(s => s.ft_votes.length));
   const isOrga = me && norm(a.organisateur) === norm(me);
-  const lieu = a.lieu
-    ? `<div class="meta">📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lieu)}" target="_blank" rel="noopener">${esc(a.lieu)}</a></div>` : '';
+  const lieu = lieuHtml(a);
   const rows = slots.map(s => {
     const mine = me && s.ft_votes.some(v => norm(v.prenom) === norm(me));
     const names = s.ft_votes.map(v => `<span class="chip ${me && norm(v.prenom) === norm(me) ? 'me' : ''}">${esc(v.prenom)}</span>`).join('');
@@ -299,6 +328,7 @@ $('list').addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const id = b.dataset.id, act = b.dataset.act;
   if (!(await ensureName())) return;
+  if (act === 'edit') { openEdit(id, b.dataset.focus); return; }
   b.disabled = true;
   try {
     if (act === 'join') {
@@ -335,6 +365,33 @@ $('list').addEventListener('click', async e => {
   }
   load();
 });
+
+/* Compléter date / heure / lieu */
+let editing = null;
+function openEdit(id, focus) {
+  const a = activities.find(x => x.id === id); if (!a) return;
+  editing = a;
+  const poll = a.statut === 'sondage';
+  $('eWhen').hidden = poll;
+  $('eDate').required = !poll; $('eDate').min = todayStr();
+  $('eDate').value = a.date || ''; $('eHeure').value = a.heure ? a.heure.slice(0, 5) : '';
+  $('eLieu').value = a.lieu || ''; $('eTitle').textContent = a.titre; $('eErr').textContent = '';
+  $('editDlg').showModal();
+  $(focus === 'lieu' || poll ? 'eLieu' : focus === 'heure' ? 'eHeure' : 'eDate').focus();
+}
+$('eCancel').onclick = () => $('editDlg').close();
+$('editForm').onsubmit = async e => {
+  e.preventDefault();
+  const a = editing, poll = a.statut === 'sondage';
+  const body = {lieu: $('eLieu').value.trim() || null};
+  if (!poll) { body.date = $('eDate').value; body.heure = $('eHeure').value || null; }
+  $('eSubmit').disabled = true;
+  try {
+    await api('/ft_activites?id=eq.' + a.id, {method: 'PATCH', body: JSON.stringify(body), headers: {Prefer: 'return=minimal'}});
+    $('editDlg').close(); toast('C’est à jour ✅'); load();
+  } catch (err) { $('eErr').textContent = 'Impossible d’enregistrer pour le moment. Réessaie.'; }
+  $('eSubmit').disabled = false;
+};
 
 /* Ajout */
 const SUGGS = ['Natation 🏊', 'Running 🏃', 'Street workout 💪', 'Salle de sport', 'Yoga 🧘', 'Gym suédoise', 'Escalade 🧗'];
