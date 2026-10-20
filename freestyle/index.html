@@ -149,7 +149,7 @@ textarea{resize:vertical;min-height:70px}
 <!-- Nouvelle activité -->
 <dialog id="addDlg">
   <form id="addForm">
-    <h2>Proposer une activité</h2>
+    <h2 id="addTitle">Proposer une activité</h2>
     <label for="fTitre">Quoi ?</label>
     <input id="fTitre" maxlength="120" placeholder="Ex : Natation, running, street workout…" required>
     <div class="sugg" id="sugg"></div>
@@ -336,7 +336,7 @@ function card(a) {
     <div class="row2">
       <button class="btn small" data-act="share" data-id="${a.id}">💬 Partager</button>
       <button class="btn small" data-act="ics" data-id="${a.id}">📅 Calendrier</button>
-      <button class="btn small full" data-act="repeat" data-id="${a.id}">🔁 Refaire la semaine suivante</button>
+      <button class="btn small full" data-act="repeat" data-id="${a.id}">🔁 Refaire cette activité</button>
     </div>
   </article>`;
 }
@@ -466,15 +466,14 @@ async function repeatActivity(id) {
   if (!(await ensureName())) return;
   const today = todayStr();
   let d = addDays(a.date, 7); while (d < today) d = addDays(d, 7);
-  const same = x => x.statut !== 'sondage' && x.date === d && norm(x.titre) === norm(a.titre) && (x.heure || '') === (a.heure || '');
-  if (activities.some(same)) { toast('Déjà prévu : ' + dayLabel(d)); return; }
-  if (!confirm('Proposer « ' + a.titre + ' » le ' + dayLabel(d) + (a.heure ? ' à ' + hm(a.heure) : '') + ' ?')) return;
-  try {
-    const [row] = await api('/ft_activites', {method: 'POST', headers: {Prefer: 'return=representation'}, body: JSON.stringify({
-      titre: a.titre, date: d, heure: a.heure, duree_fin: a.duree_fin, lieu: a.lieu, description: a.description, organisateur: me, statut: 'fixe'})});
-    await api('/ft_inscriptions', {method: 'POST', body: JSON.stringify({activite_id: row.id, prenom: me}), headers: {Prefer: 'return=minimal'}});
-    toast('Proposé : ' + dayLabel(d) + ' ✅'); load();
-  } catch (e) { toast('Oups, ça n’a pas marché. Réessaie.'); }
+  const hh = a.heure ? a.heure.slice(0, 5) : '';
+  // On rouvre le formulaire pré-rempli : une date (la semaine suivante) ou plusieurs dates (sondage).
+  slotPrefill = {date: d, heure: hh}; pendingEnd = a.duree_fin || null;
+  $('addTitle').textContent = 'Refaire cette activité';
+  $('addForm').reset(); $('slotRows').innerHTML = ''; setMulti(false);
+  $('fTitre').value = a.titre; $('fDate').min = today; $('fDate').value = d; $('fHeure').value = hh;
+  $('fLieu').value = a.lieu || ''; $('fDesc').value = a.description || ''; $('addErr').textContent = '';
+  $('addDlg').showModal();
 }
 
 /* Partager sur WhatsApp */
@@ -610,16 +609,21 @@ function readSlots(box) {
   });
   return slots;
 }
+let slotPrefill = null, pendingEnd = null; // utilisés quand on « refait » une activité
 function setMulti(on) {
   $('fixedWhen').hidden = on; $('pollWhen').hidden = !on;
   $('fDate').required = !on;
-  if (on && !$('slotRows').children.length) { addSlotRow(); addSlotRow(); }
+  if (on && !$('slotRows').children.length) {
+    if (slotPrefill) { addSlotRow(slotPrefill.date, slotPrefill.heure); addSlotRow(addDays(slotPrefill.date, 1), slotPrefill.heure); }
+    else { addSlotRow(); addSlotRow(); }
+  }
 }
 $('fMulti').onchange = e => setMulti(e.target.checked);
 $('addSlot').onclick = () => addSlotRow();
 
 $('addBtn').onclick = async () => {
   if (!(await ensureName())) return;
+  slotPrefill = null; pendingEnd = null; $('addTitle').textContent = 'Proposer une activité';
   $('addForm').reset(); $('slotRows').innerHTML = ''; setMulti(false);
   $('fDate').min = todayStr(); $('fDate').value = todayStr(); $('addErr').textContent = '';
   $('addDlg').showModal();
@@ -640,6 +644,7 @@ $('addForm').onsubmit = async e => {
   }
   const body = {
     titre: $('fTitre').value.trim(), date: multi ? null : $('fDate').value, heure: multi ? null : ($('fHeure').value || null),
+    duree_fin: multi ? null : pendingEnd,
     statut: multi ? 'sondage' : 'fixe',
     lieu: $('fLieu').value.trim() || null, description: $('fDesc').value.trim() || null, organisateur: me
   };
