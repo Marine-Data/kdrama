@@ -28,6 +28,20 @@ li.h em{font-style:normal;font-family:var(--body);font-weight:400;text-transform
 .foot b{color:var(--fg)}
 .wa{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font:inherit;font-weight:700;color:#fff;background:#25D366;border:0;border-radius:999px;padding:11px 18px;cursor:pointer}
 .wa:active{transform:translateY(1px)}
+
+.log{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.log input{font:inherit;font-size:.9rem;width:5em;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.log .u{color:var(--muted);font-size:.8rem}
+.prev{color:var(--muted);font-size:.78rem;width:100%}
+.bar2{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 0}
+.bar2 button{font:inherit;font-weight:700;border-radius:999px;padding:11px 18px;cursor:pointer;border:0}
+#save{background:var(--c2);color:#fff}
+#hist{background:none;color:var(--c2);text-decoration:underline;text-underline-offset:3px;padding:11px 2px}
+#histBox{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:.9rem}
+#histBox h3{font-family:var(--display);font-size:.95rem;margin:10px 0 4px}
+#histBox h3:first-child{margin-top:0}
+#histBox p{margin:2px 0;color:var(--muted)}
+#msg{margin:10px 0 0;font-size:.9rem;font-weight:700}
 </style></head><body>
 <main>
 <a class="back" href="../#seances">&larr; Séances</a>
@@ -40,20 +54,20 @@ li.h em{font-style:normal;font-family:var(--body);font-weight:400;text-transform
 <li><b>5 min</b><span>corde à sauter<small>ou jumping jacks si la corde est prise</small></span></li>
 
 <li class="h">Poirier et explosivité <em>15 min</em></li>
-<li><b>5×30 s</b><span>poirier face au mur<small>ventre serré, pas de cambrure</small></span></li>
-<li><b>4×3</b><span>squats sautés ou montée sur box<small>le plus haut possible, repos complet entre les séries</small></span></li>
+<li><b>5×30 s</b><span data-ex="poirier face au mur">poirier face au mur<small>ventre serré, pas de cambrure</small></span></li>
+<li><b>4×3</b><span data-ex="squats sautés ou montée sur box">squats sautés ou montée sur box<small>le plus haut possible, repos complet entre les séries</small></span></li>
 
 <li class="h">Force <em>25 min</em></li>
-<li><b>4×5</b><span>tractions à l'élastique<small>descente lente en 3 s · en série avec le soulevé de terre</small></span></li>
-<li><b>4×8</b><span>soulevé de terre roumain haltères<small>jambes presque tendues, dos plat</small></span></li>
-<li><b>4×8</b><span>développé épaules haltères<small>en série avec le hip thrust</small></span></li>
-<li><b>4×10</b><span>hip thrust sur banc<small>fessiers</small></span></li>
-<li><b>3×15</b><span>face pull à la poulie<small>protège l'épaule</small></span></li>
+<li><b>4×5</b><span data-ex="tractions à l'élastique">tractions à l'élastique<small>descente lente en 3 s · en série avec le soulevé de terre</small></span></li>
+<li><b>4×8</b><span data-ex="soulevé de terre roumain haltères">soulevé de terre roumain haltères<small>jambes presque tendues, dos plat</small></span></li>
+<li><b>4×8</b><span data-ex="développé épaules haltères">développé épaules haltères<small>en série avec le hip thrust</small></span></li>
+<li><b>4×10</b><span data-ex="hip thrust sur banc">hip thrust sur banc<small>fessiers</small></span></li>
+<li><b>3×15</b><span data-ex="face pull à la poulie">face pull à la poulie<small>protège l'épaule</small></span></li>
 
 <li class="h">Gainage et rotations <em>10 min</em></li>
-<li><b>3×10</b><span>Pallof press à la poulie<small>par côté, bassin fixe</small></span></li>
-<li><b>3×20 m</b><span>marche bras tendus au-dessus de la tête<small>haltères, côtes basses</small></span></li>
-<li><b>3×30 s</b><span>hollow hold</span></li>
+<li><b>3×10</b><span data-ex="Pallof press à la poulie">Pallof press à la poulie<small>par côté, bassin fixe</small></span></li>
+<li><b>3×20 m</b><span data-ex="marche bras tendus au-dessus de la tête">marche bras tendus au-dessus de la tête<small>haltères, côtes basses</small></span></li>
+<li><b>3×30 s</b><span data-ex="hollow hold">hollow hold</span></li>
 
 <li class="h">Souplesse <em>12 min</em></li>
 <li><b>3×45 s</b><span>pont ou ouverture d'épaules au mur</span></li>
@@ -62,6 +76,9 @@ li.h em{font-style:normal;font-family:var(--body);font-weight:400;text-transform
 </ol>
 <p class="foot"><b>Charge :</b> les deux dernières répétitions doivent être dures, pas impossibles. Si tu finis facile, tu montes la fois d'après.</p>
 <p class="foot"><b>Progression :</b> chaque semaine, ajoute une répétition ou 2,5 kg sur un seul exercice du bloc force. Quand les 4×5 tractions passent, prends un élastique plus fin.</p><p class="foot">Si tu manques de temps, enlève le face pull et la marche bras tendus. Jamais le bloc poirier et explosivité : c'est lui qui fait progresser le tricking.</p>
+<div class="bar2"><button id="save" type="button">Enregistrer la séance</button><button id="hist" type="button">Historique</button></div>
+<p id="msg" hidden></p>
+<div id="histBox" hidden></div>
 <p><button class="wa" type="button">Partager sur WhatsApp</button></p>
 </main>
 <script>
@@ -79,5 +96,77 @@ document.querySelector('.wa').addEventListener('click',function(){
  lines.push('');lines.push(location.href.split('#')[0]);
  window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener');
 });
+</script>
+<script>
+(function(){
+var SB='https://osqyczwawbbwjwaubtvc.supabase.co/rest/v1';
+var K='sb_publishable_Z4ykq9R8uYhtrAks301TPA_ujR1K2VB';
+var H={apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'};
+var SEANCE='renfo';
+var me='';try{me=localStorage.getItem('ft_prenom')||''}catch(e){}
+function msg(t,ok){var m=document.getElementById('msg');m.hidden=false;m.textContent=t;m.style.color=ok?'#1E9A78':'#D9474B'}
+var rows=[].slice.call(document.querySelectorAll('span[data-ex]'));
+rows.forEach(function(sp){
+ var d=document.createElement('div');d.className='log';
+ d.innerHTML='<span class="prev"></span>'+
+  '<input type="text" inputmode="decimal" placeholder="kg" aria-label="charge">'+
+  '<input type="text" inputmode="numeric" placeholder="reps" aria-label="répétitions">';
+ sp.appendChild(d);
+});
+function val(sp,i){return sp.querySelectorAll('.log input')[i].value.trim()}
+function api(p,o){o=o||{};o.headers=H;return fetch(SB+p,o).then(function(r){
+ if(!r.ok)return r.text().then(function(t){throw new Error(t||r.status)});
+ return r.status===204?null:r.json().catch(function(){return null})})}
+function loadPrev(){
+ if(!me)return;
+ api('/ft_journal?seance=eq.'+SEANCE+'&prenom=eq.'+encodeURIComponent(me)+'&order=date.desc,id.desc&limit=200')
+ .then(function(d){
+  if(!d)return; var seen={};
+  d.forEach(function(r){if(!seen[r.exercice])seen[r.exercice]=r});
+  rows.forEach(function(sp){
+   var r=seen[sp.dataset.ex];if(!r)return;
+   var p=[];if(r.charge)p.push(r.charge+' kg');if(r.reps)p.push(r.reps+' reps');
+   sp.querySelector('.prev').textContent='dernière fois ('+r.date.slice(8,10)+'/'+r.date.slice(5,7)+') : '+p.join(' × ');
+  });
+ }).catch(function(){});
+}
+function ask(){
+ if(me)return true;
+ var n=prompt('Ton prénom ?');if(!n)return false;
+ me=n.trim();try{localStorage.setItem('ft_prenom',me)}catch(e){}
+ return true;
+}
+document.getElementById('save').addEventListener('click',function(){
+ if(!ask())return;
+ var d=new Date(),dt=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ var payload=[];
+ rows.forEach(function(sp){
+  var c=val(sp,0),r=val(sp,1);
+  if(c||r)payload.push({prenom:me,seance:SEANCE,date:dt,exercice:sp.dataset.ex,charge:c||null,reps:r||null});
+ });
+ if(!payload.length){msg('Remplis au moins une ligne.',false);return}
+ msg('Enregistrement…',true);
+ api('/ft_journal',{method:'POST',body:JSON.stringify(payload)})
+ .then(function(){msg(payload.length+' exercices enregistrés.',true);loadPrev()})
+ .catch(function(){msg('Échec de l\'enregistrement. Réessaie.',false)});
+});
+document.getElementById('hist').addEventListener('click',function(){
+ var box=document.getElementById('histBox');
+ if(!box.hidden){box.hidden=true;return}
+ if(!ask())return;
+ box.hidden=false;box.textContent='Chargement…';
+ api('/ft_journal?seance=eq.'+SEANCE+'&prenom=eq.'+encodeURIComponent(me)+'&order=date.desc,id.asc&limit=300')
+ .then(function(d){
+  if(!d||!d.length){box.textContent='Aucune séance enregistrée pour le moment.';return}
+  var by={},order=[];
+  d.forEach(function(r){if(!by[r.date]){by[r.date]=[];order.push(r.date)}by[r.date].push(r)});
+  box.innerHTML=order.map(function(dt){
+   return '<h3>'+dt.slice(8,10)+'/'+dt.slice(5,7)+'/'+dt.slice(0,4)+'</h3>'+by[dt].map(function(r){
+    var p=[];if(r.charge)p.push(r.charge+' kg');if(r.reps)p.push(r.reps+' reps');
+    return '<p>'+r.exercice+' — '+p.join(' × ')+'</p>'}).join('')}).join('');
+ }).catch(function(){box.textContent='Impossible de charger l\'historique.'});
+});
+loadPrev();
+})();
 </script>
 </body></html>
