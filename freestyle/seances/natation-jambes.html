@@ -27,19 +27,21 @@ li small{display:block;color:var(--muted);font-size:.82rem}
 
 .wa{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font:inherit;font-weight:700;color:#fff;background:#25D366;border:0;border-radius:999px;padding:11px 18px;cursor:pointer}
 .wa:active{transform:translateY(1px)}
+li b{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+li b em{font-family:var(--body);font-style:normal;font-size:.72rem;font-weight:400;color:var(--muted);letter-spacing:.01em}
 </style></head><body>
 <main>
 <a class="back" href="natation.html">&larr; Natation</a>
 <h1>Natation 1 500 m</h1>
 <p class="sub">Séance d'Adrien V2, avec planche · 100 m = 4 longueurs</p>
 <ol>
-<li><b>300</b><span>nage libre<small>échauffement</small></span></li>
-<li><b>4×100</b><span>nage complète, planche, pull-buoy, plaquettes<small>dans cet ordre</small></span></li>
-<li><b>100</b><span>récup au choix</span></li>
-<li><b>200</b><span>pull + plaquettes<small>chercher les appuis, amplitude</small></span></li>
-<li><b>200</b><span>planche<small>battements depuis la hanche, fessiers serrés</small></span></li>
-<li><b>200</b><span>nage complète<small>garder l'amplitude et les appuis</small></span></li>
-<li><b>100</b><span>récup au choix</span></li>
+<li><b>300<em>12 long.</em></b><span>nage libre<small>échauffement</small></span></li>
+<li><b>4×100<em>4×4 long.</em></b><span>nage complète, planche, pull-buoy, plaquettes<small>dans cet ordre</small></span></li>
+<li><b>100<em>4 long.</em></b><span>récup au choix</span></li>
+<li><b>200<em>8 long.</em></b><span>pull + plaquettes<small>chercher les appuis, amplitude</small></span></li>
+<li><b>200<em>8 long.</em></b><span>planche<small>battements depuis la hanche, fessiers serrés</small></span></li>
+<li><b>200<em>8 long.</em></b><span>nage complète<small>garder l'amplitude et les appuis</small></span></li>
+<li><b>100<em>4 long.</em></b><span>récup au choix</span></li>
 </ol>
 <p class="foot"><b>Amplitude :</b> aller chercher loin devant, et sous l'eau finir le mouvement jusqu'à avoir le bras tendu le long du corps.</p>
 <p class="foot">Les 200 m de planche remplacent les 200 m de pull : moins de bras, les jambes et les fessiers en plus.</p>
@@ -51,7 +53,7 @@ document.querySelector('.wa').addEventListener('click',function(){
  var sub=document.querySelector('.sub');
  var lines=[t+(sub?' — '+sub.textContent.trim():'')];
  document.querySelectorAll('ol li').forEach(function(li){
-  var n=li.querySelector('b').textContent.trim();
+  var bb=li.querySelector('b').cloneNode(true);var be=bb.querySelector('em');if(be)be.remove();var n=bb.textContent.trim();
   var s=li.querySelector('span').cloneNode(true);
   var sm=s.querySelector('small'); var d=sm?sm.textContent.trim():'';
   if(sm)sm.remove();
