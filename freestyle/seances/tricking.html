@@ -5,6 +5,11 @@
 .acc .abody{display:flex;flex-direction:column;gap:inherit}
 .acc:not(.open) .abody{display:none}
 .sess{gap:18px}
+.goals li a{color:inherit;text-decoration:none;display:inline-block;padding:3px 10px;margin:-3px -10px}
+.goals li:has(a){padding:0;border-color:var(--c2)}
+.goals li a::after{content:" ↗";font-size:.75em;color:var(--c2)}
+.card h3 a{color:inherit;text-decoration:underline;text-decoration-color:var(--c2);text-decoration-thickness:2px;text-underline-offset:3px}
+.card h3 a::after{content:" ↗";font-size:.7em;color:var(--c2)}
 </style></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
@@ -143,6 +148,15 @@ h.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.prev
 });
 });}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>
+(function(){
+var yt='https://www.youtube.com/results?search_query=';
+var goals={};document.querySelectorAll('.goal').forEach(function(g){var a=g.querySelector('a[href*="youtube"]');if(a)goals[g.querySelector('h3').textContent.trim().toLowerCase()]=a.href});
+function find(t){t=t.toLowerCase();for(var k in goals){if(t===k||t.indexOf(k)===0||k.indexOf(t)===0)return goals[k]}return null}
+document.querySelectorAll('.goals li').forEach(function(li){var u=find(li.textContent.trim());if(!u)return;var a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';a.textContent=li.textContent;li.textContent='';li.appendChild(a)});
+document.querySelectorAll('.card h3').forEach(function(h){var t=h.textContent.trim();var a=document.createElement('a');a.href=find(t)||yt+encodeURIComponent('tuto '+t+' progression');a.target='_blank';a.rel='noopener';a.textContent=t;h.textContent='';h.appendChild(a)});
 })();
 </script>
 </body></html>
