@@ -1,211 +1,45 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Séance de natation – Freestyle Tricks</title><meta name="theme-color" content="#ECEFF5"><link rel="icon" type="image/png" href="../icon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-.eq{align-self:flex-start;margin:0;font-size:.72rem;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
-.acc>.sh:has(h2:only-child){grid-template-areas:"t t t p"}
-</style></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Natation 1 500 m – Freestyle Tricks</title>
+<meta name="theme-color" content="#ECEFF5">
+<link rel="icon" type="image/png" href="../icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-/* Layout : bande chronologique 75 min en tête, puis un bloc par phase avec grille de fiches illustrées */
-:root{
-  --bg:#ECEFF5; --surface:#FFFFFF; --fg:#171E30; --muted:#5A6378; --line:#D5DAE6; --limb:#8E97AD;
-  --c1:#E4A11B; --c2:#2C55D6; --c3:#D9474B; --c4:#1E9A78; --c5:#7B5BD0; --c6:#0B8BA6; --c7:#C23E8E;
-  --display:"Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
-  --body:"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E1220; --surface:#171D2E; --fg:#E7EBF4; --muted:#9AA3B9; --line:#2A3247; --limb:#6A7491;
-  --c1:#F2B840; --c2:#7393F5; --c3:#F07477; --c4:#4CC7A2; --c5:#A68BF0; --c6:#3FC3DD; --c7:#EE77BE; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1220; --surface:#171D2E; --fg:#E7EBF4; --muted:#9AA3B9; --line:#2A3247; --limb:#6A7491;
-  --c1:#F2B840; --c2:#7393F5; --c3:#F07477; --c4:#4CC7A2; --c5:#A68BF0; --c6:#3FC3DD; --c7:#EE77BE; color-scheme:dark}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
-.wrap{max-width:1040px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:40px}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
-h1{font-size:clamp(2.2rem,7vw,3.6rem);font-weight:800;letter-spacing:-.02em}
-.top{display:flex;flex-direction:column;gap:10px}
-.lede{margin:0;color:var(--muted);max-width:60ch}
-.goals{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
-.goals li{font-size:.82rem;padding:3px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
-.bar{display:flex;height:34px;border-radius:6px;overflow:hidden;gap:2px}
-.seg{display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;min-width:0}
-.seg span{white-space:nowrap;overflow:hidden}
-.c1{background:var(--c1)}.c2{background:var(--c2)}.c3{background:var(--c3)}.c4{background:var(--c4)}.c5{background:var(--c5)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;margin:0;padding:0;font-size:.82rem;color:var(--muted)}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-section{display:flex;flex-direction:column;gap:10px}
-.sh{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px}
-.sh h2{font-size:1.7rem;font-weight:800}
-.tc{font-size:.78rem;font-weight:700;color:#fff;padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums;letter-spacing:.03em}
-.dur{color:var(--muted);font-size:.9rem}
-.intro{margin:0 0 6px;color:var(--muted);max-width:65ch}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(160px,100%),1fr));gap:10px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
-.fig{position:relative;padding:10px 12px 4px;background:var(--surface)}
-.fig::before{content:"";position:absolute;inset:0;opacity:.1;background:inherit}
-.fig.c1{--k:var(--c1)}.fig.c2{--k:var(--c2)}.fig.c3{--k:var(--c3)}.fig.c4{--k:var(--c4)}.fig.c5{--k:var(--c5)}
-.fig{background:color-mix(in srgb,var(--k) 10%,var(--surface))}
-.fig::before{display:none}
-.fig svg{display:block;width:100%;max-width:100%;height:auto;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.fig .f,.fig .t{stroke:var(--fg);stroke-width:3.4}
-.fig .t{stroke-width:4}
-.fig .b{stroke:var(--limb);stroke-width:3.2}
-.fig .h{fill:var(--fg)}
-.fig .g{stroke:var(--muted);stroke-width:1.4}
-.fig .w{fill:var(--line);stroke:var(--muted);stroke-width:1}
-.fig .m{fill:color-mix(in srgb,var(--k) 25%,var(--surface));stroke:var(--muted);stroke-width:1}
-.fig .tb{stroke:var(--muted);stroke-width:2.4}
-.fig .r{stroke:var(--k);stroke-width:1.6}
-.fig .mo{stroke:var(--k);stroke-width:2;stroke-dasharray:2 3}
-.fig .a{stroke:var(--k);stroke-width:2.2}
-.fig .d{stroke:var(--k);stroke-width:1.8;stroke-dasharray:4 4}
-.txt{padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.txt h3{font-size:1rem;font-weight:700}
-.dose{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
-.cue{margin:0;color:var(--muted);font-size:.86rem;line-height:1.4}
-.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
-.note{border-top:3px solid var(--fg);padding-top:10px}
-.note h3{font-size:1rem;margin-bottom:4px}
-.note p{margin:0;color:var(--muted);font-size:.94rem}
-.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:10px}
-.goal{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.goal h3{font-size:1rem;display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.goal h3 i{width:10px;height:10px;border-radius:2px;flex:none}
-.goal ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.goal a{color:var(--c2);font-weight:700;font-size:.9rem;text-decoration:underline;text-underline-offset:2px}
-.goal a:focus-visible{outline:2px solid var(--c2);outline-offset:2px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px}
-.tabs button{font:inherit;color:var(--fg);background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
-.tabs button b{font-family:var(--display);font-size:1.15rem}
-.tabs button span{color:var(--muted);font-size:.86rem}
-.tabs button[aria-selected="true"]{border-color:var(--fg);background:var(--fg);color:var(--bg)}
-.tabs button[aria-selected="true"] span{color:var(--bg);opacity:.8}
-.tabs button:focus-visible{outline:3px solid var(--c2);outline-offset:2px}
-.sess{display:flex;flex-direction:column;gap:40px}
-.c6{background:var(--c6)}.c7{background:var(--c7)}
-.fig.c6{--k:var(--c6)}.fig.c7{--k:var(--c7)}
-.fig.c6,.fig.c7{background:color-mix(in srgb,var(--k) 10%,var(--surface))}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.back{align-self:flex-start;font-weight:700;color:var(--c2);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
-.back:focus-visible{outline:2px solid var(--c2);outline-offset:2px}
-.acc>.sh{cursor:pointer;position:relative;padding-right:30px;-webkit-tap-highlight-color:transparent}
-.acc>.sh::after{content:"";position:absolute;right:6px;top:50%;width:9px;height:9px;border-right:2.5px solid var(--fg);border-bottom:2.5px solid var(--fg);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
-.acc.open>.sh::after{transform:translateY(-30%) rotate(-135deg)}
-.acc>.sh:focus-visible{outline:2px solid var(--c2);outline-offset:4px;border-radius:6px}
-.acc .abody{display:flex;flex-direction:column;gap:inherit}
-.acc:not(.open) .abody{display:none}
-.sess{gap:18px}
-.goals li a{color:inherit;text-decoration:none;display:inline-block;padding:4px 11px}
-.goals li:has(a){padding:0;border-color:var(--c2)}
-.goals li a::after{content:" ↗";font-size:.75em;color:var(--c2)}
-.card h3 a{color:inherit;text-decoration:underline;text-decoration-color:var(--c2);text-decoration-thickness:2px;text-underline-offset:3px}
-.card h3 a::after{content:" ↗";font-size:.7em;color:var(--c2)}
-
-h1{font-size:clamp(1.8rem,6vw,2.8rem)}
-.wrap{padding-block:16px 40px;gap:22px}
-.sess{gap:12px}
-.tabs button{padding:7px 12px}.tabs button b{font-size:1.05rem}
-.fig svg{max-height:92px;margin:0 auto}
-.fig{padding:8px 12px 2px}
-.txt{padding:6px 12px 10px}
-.bar{height:38px;gap:3px}
-.seg{border:0;padding:0;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;border-radius:4px}
-.seg:focus-visible,.legend button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
-.legend button{font:inherit;color:inherit;background:none;border:0;padding:4px 0;cursor:pointer;display:inline-flex;align-items:center}
-.legend li.on button{color:var(--fg);font-weight:700}
-.seg.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--fg)}
-.tools{display:flex;gap:8px;justify-content:space-between;align-items:center}
-.tools button{font:inherit;font-size:.85rem;font-weight:700;color:var(--c2);background:none;border:0;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.prog{margin-left:auto;font-size:.8rem;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 9px;font-variant-numeric:tabular-nums}
-.prog.full{background:var(--c4);border-color:var(--c4);color:#fff}
-.acc>.sh{align-items:center}
-.acc>.sh .dur{display:none}
-.acc>.sh .prog{margin-right:2px}
-.card{position:relative}
-.chk{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:transparent;font-size:1.1rem;font-weight:800;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.chk:focus-visible{outline:2px solid var(--c2);outline-offset:2px}
-.card.done .chk{background:var(--c4);border-color:var(--c4);color:#fff}
-.card.done .fig,.card.done .txt{opacity:.5}
-.acc>.sh{flex-wrap:nowrap}.acc>.sh h2{flex:1;min-width:0}.acc>.sh .prog{flex:none}
-.acc>.sh{gap:8px}.acc>.sh h2{font-size:1.2rem}.acc>.sh{padding-right:26px}
-
-.acc>.sh{display:grid;grid-template-columns:auto auto 1fr auto;grid-template-areas:"t t t p" "m d . p";align-items:center;gap:4px 10px;background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--k);border-radius:12px;padding:12px 44px 12px 14px;min-height:60px}
-.acc>.sh h2{grid-area:t;font-size:1.25rem;flex:none}
-.acc>.sh .tc{grid-area:m;background:none;color:var(--muted);padding:0;font-size:.9rem;letter-spacing:0}
-.acc>.sh .dur{grid-area:d;display:inline;font-size:.9rem;color:var(--muted)}
-.acc>.sh .dur::before{content:"·";margin-right:10px}
-.acc>.sh .prog{grid-area:p;align-self:center;margin:0}
-.acc>.sh::after{right:16px}
-.acc.open>.sh{border-bottom-left-radius:12px}
-.acc>.sh:has(.c1){--k:var(--c1)}.acc>.sh:has(.c2){--k:var(--c2)}.acc>.sh:has(.c3){--k:var(--c3)}.acc>.sh:has(.c4){--k:var(--c4)}.acc>.sh:has(.c5){--k:var(--c5)}.acc>.sh:has(.c6){--k:var(--c6)}.acc>.sh:has(.c7){--k:var(--c7)}
-.acc>.intro{display:none}
-.acc .abody>.intro{margin-top:2px}
-</style>
-<script>
-document.addEventListener('click',function(e){var b=e.target.closest('.tabs button');if(!b)return;var t=b.dataset.t;
-document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false')});
-document.getElementById('sa').hidden=t!=='a';document.getElementById('sb').hidden=t!=='b';
-try{localStorage.setItem('seance',t)}catch(_){}
-window.scrollTo({top:document.querySelector('.tabs').offsetTop-8});});
-document.addEventListener('DOMContentLoaded',function(){var t;try{t=localStorage.getItem('seance')}catch(_){}
-if(t==='b')document.getElementById('tab-b').click(),window.scrollTo(0,0);});
-</script>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs></svg>
-<main class="wrap"><a class="back" href="../#seances">&larr; Séances · Freestyle Tricks</a><div class="top"><h1>Séance natation 1 500 m</h1><p class="lede">60 longueurs de 25 m en crawl, soit 1 500 m. Tout se compte en longueurs, jamais en allers-retours. Les arrêts sont placés exprès : c'est ce qui permet de tirer fort sur chaque longueur. Une cinquantaine de minutes ; les horaires sont des repères.</p><ul class="goals"><li>Dos dessiné</li><li>Épaules</li><li>Taille</li><li>Fessiers</li><li>60 longueurs · 1 500 m</li><li>Plaquettes · pull-buoy · planche</li></ul></div><div id="s1" class="sess"><div class="bar" aria-label="Répartition des 45 minutes"><div class="seg c1" style="flex:8"><span>8 min</span></div><div class="seg c2" style="flex:14"><span>14 min</span></div><div class="seg c4" style="flex:9"><span>9 min</span></div><div class="seg c3" style="flex:8"><span>8 min</span></div><div class="seg c7" style="flex:7"><span>7 min</span></div><div class="seg c5" style="flex:4"><span>4 min</span></div></div><ul class="legend"><li><i class="c1"></i>Échauffement</li><li><i class="c2"></i>Dos &amp; épaules</li><li><i class="c4"></i>Jambes &amp; fessiers</li><li><i class="c3"></i>Sprints</li><li><i class="c7"></i>Gainage</li><li><i class="c5"></i>Retour au calme</li></ul><section><header class="sh"><span class="tc c1">0:00 &rarr; 0:08</span><h2>Échauffement</h2><span class="dur">12 longueurs</span></header><p class="intro">Réveiller l'appui sur l'eau.</p><div class="grid"><article class="card"><div class="fig c1"><svg viewBox="0 0 120 96" role="img" aria-label="nage crawl"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L13,55" class="b"/><path d="M26,62 L15,70" class="f"/><path d="M74,58 L100,50" class="f"/><path d="M74,59 Q80,28 98,34" class="b"/><path d="M98,34 l6,3" class="b"/><path d="M9,48 l-5,-4 M7,52 l-6,0 M10,72 l-5,4" class="r"/></svg></div><div class="txt"><h3>Crawl souple</h3><p class="dose">8 longueurs d'affilée</p><p class="cue">Sans t'arrêter. Respiration tous les 3 temps. Allure facile.</p></div></article><article class="card"><div class="fig c1"><svg viewBox="0 0 120 96" role="img" aria-label="rattrapé"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L13,55" class="b"/><path d="M26,62 L15,70" class="f"/><path d="M74,58 L101,51" class="f"/><path d="M74,59 L99,55" class="b"/><path d="M90,66 q10,-6 12,-12" class="d"/></svg></div><div class="txt"><h3>Rattrapé</h3><p class="dose">2 longueurs · r. 15 s au mur</p><p class="cue">Une main attend l'autre devant. Glisse longue.</p></div></article><article class="card"><div class="fig c1"><svg viewBox="0 0 120 96" role="img" aria-label="poings fermés"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L13,55" class="b"/><path d="M26,62 L15,70" class="f"/><path d="M74,58 L98,51" class="f"/><circle cx="102" cy="50" r="5" class="m"/><path d="M74,59 Q82,32 97,37" class="b"/></svg></div><div class="txt"><h3>Poings fermés</h3><p class="dose">2 longueurs · r. 15 s au mur</p><p class="cue">Poings fermés. Tu sens l'avant-bras pousser l'eau.</p></div></article></div></section><section><header class="sh"><span class="tc c2">0:08 &rarr; 0:22</span><h2>Dos &amp; épaules</h2><span class="dur">16 longueurs</span></header><p class="intro">Jambes au repos. Dos, épaules, triceps.</p><div class="grid"><article class="card"><div class="fig c2"><svg viewBox="0 0 120 96" role="img" aria-label="prise d appui plaquettes"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L13,55" class="b"/><path d="M26,62 L15,70" class="f"/><path d="M74,58 L96,50" class="f"/><rect x="95" y="43" width="16" height="11" rx="2" class="m" transform="rotate(-14 103 48)"/><path d="M92,62 q-14,8 -28,4" class="a"/><path d="M64,66 l7,-4 M64,66 l6,4" class="a"/></svg></div><div class="txt"><h3>Prise d'appui</h3><p class="dose">4 longueurs · r. 20 s au mur</p><p class="eq">Plaquettes seules</p><p class="cue">Lentement. Compte tes coups de bras, enlèves-en un à la longueur suivante.</p></div></article><article class="card"><div class="fig c2"><svg viewBox="0 0 120 96" role="img" aria-label="tirage plaquettes et pull buoy"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L12,58" class="b"/><path d="M26,62 L13,66" class="f"/><rect x="18" y="56" width="15" height="13" rx="6" class="m"/><path d="M74,58 L96,50" class="f"/><rect x="95" y="43" width="16" height="11" rx="2" class="m" transform="rotate(-14 103 48)"/><path d="M74,59 Q82,30 97,36" class="b"/></svg></div><div class="txt"><h3>Tirage fort</h3><p class="dose">12 longueurs · r. 20 s au mur</p><p class="eq">Plaquettes + pull-buoy</p><p class="cue">Coude haut. Pousse jusqu'à la cuisse. Fort, jamais douloureux à l'épaule.</p></div></article></div></section><section><header class="sh"><span class="tc c4">0:22 &rarr; 0:31</span><h2>Jambes &amp; fessiers</h2><span class="dur">8 longueurs</span></header><p class="intro">Le bas du corps.</p><div class="grid"><article class="card"><div class="fig c4"><svg viewBox="0 0 120 96" role="img" aria-label="battements avec planche"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M74,58 L95,52" class="f"/><rect x="93" y="44" width="22" height="11" rx="2" class="m"/><path d="M26,62 L12,54" class="b"/><path d="M26,62 L14,70" class="f"/><path d="M8,50 l-5,-4 M6,56 l-5,-1 M9,74 l-5,4" class="r"/><path d="M20,48 q6,8 0,16" class="mo"/></svg></div><div class="txt"><h3>Battements planche</h3><p class="dose">8 longueurs · r. 20 s au mur</p><p class="eq">Planche</p><p class="cue">Depuis la hanche, jambes longues, pointes tendues. Fessiers serrés. Une vite, une souple.</p></div></article></div></section><section><header class="sh"><span class="tc c3">0:31 &rarr; 0:39</span><h2>Sprints</h2><span class="dur">10 longueurs</span></header><p class="intro">Court et intense.</p><div class="grid"><article class="card"><div class="fig c3"><svg viewBox="0 0 120 96" role="img" aria-label="sprint 25 m"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L13,55" class="b"/><path d="M26,62 L15,70" class="f"/><path d="M74,58 L102,49" class="f"/><path d="M74,59 Q82,28 99,33" class="b"/><path d="M4,44 l16,0 M2,52 l12,0 M6,76 l14,0" class="mo"/><path d="M8,48 l-5,-3" class="r"/></svg></div><div class="txt"><h3>Longueur vite</h3><p class="dose">10 longueurs · r. 30 s au mur</p><p class="cue">À fond, sans plaquettes. Nage grand, ne mouline pas.</p></div></article></div></section><section><header class="sh"><span class="tc c7">0:39 &rarr; 0:46</span><h2>Gainage</h2><span class="dur">8 longueurs</span></header><p class="intro">La taille, à vitesse normale.</p><div class="grid"><article class="card"><div class="fig c7"><svg viewBox="0 0 120 96" role="img" aria-label="crawl avec pull-buoy seul"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="62" x2="78" y2="57" class="t"/><circle cx="84" cy="56" r="6" class="h"/><path d="M26,62 L12,58" class="b"/><path d="M26,62 L13,66" class="f"/><rect x="18" y="56" width="15" height="13" rx="6" class="m"/><path d="M74,58 L100,50" class="f"/><path d="M74,59 Q82,30 98,35" class="b"/><path d="M40,48 q8,5 0,10" class="a"/></svg></div><div class="txt"><h3>Crawl pull-buoy seul</h3><p class="dose">8 longueurs · r. 20 s au mur</p><p class="eq">Pull-buoy</p><p class="cue">Jambes immobiles : c'est le ventre qui tient le corps droit. Serre la sangle.</p></div></article></div></section><section><header class="sh"><span class="tc c5">0:46 &rarr; 0:50</span><h2>Retour au calme</h2><span class="dur">6 longueurs</span></header><p class="intro">Faire redescendre.</p><div class="grid"><article class="card"><div class="fig c5"><svg viewBox="0 0 120 96" role="img" aria-label="retour au calme sur le dos"><path d="M2,36 q8,-4 16,0 t16,0 t16,0 t16,0 t16,0 t16,0 t16,0" class="g"/><line x1="26" y1="56" x2="78" y2="58" class="t"/><circle cx="84" cy="58" r="6" class="h"/><path d="M78,58 L58,66" class="b"/><path d="M78,57 L60,62" class="f"/><path d="M26,56 L13,52" class="b"/><path d="M26,56 L13,60" class="f"/><path d="M50,40 q6,-6 12,0" class="r"/></svg></div><div class="txt"><h3>Dos crawlé souple</h3><p class="dose">6 longueurs d'affilée</p><p class="cue">Relâche tout. Puis douche et dodo.</p></div></article></div></section></div><section><header class="sh"><h2>Pour que ça marche</h2></header><div class="notes"><div class="note"><h3>Les plaquettes, doucement</h3><p>Prends le plus petit modèle. Arrête si ça tire dans l'épaule.</p></div><div class="note"><h3>Le repos fait partie de la séance</h3><p>Les 20 à 30 s au mur servent à tirer fort la fois d'après.</p></div><div class="note"><h3>Si tu n'as que 45 minutes</h3><p>Enlève 4 longueurs de tirage, 2 de battements, 2 de sprint, 4 au pull-buoy. Reste 48 longueurs.</p></div><div class="note"><h3>En ligne d'eau chargée</h3><p>Repos collée au bord, mur libre. Pars 10 s après la personne devant.</p></div><div class="note"><h3>Pour progresser</h3><p>Quand les 12 longueurs de tirage passent, descends le repos à 15 s. Les plaquettes plus grandes après.</p></div><div class="note"><h3>Ce que l'eau fait, et ne fait pas</h3><p>Elle dessine le haut du dos, les épaules, la taille. Elle porte le corps : le reste tient au sommeil et à l'assiette.</p></div></div></section><section><header class="sh"><h2>Pour progresser</h2></header><p class="intro">Des recherches YouTube ciblées.</p><div class="links"><div class="goal"><h3><i class="c2"></i>Crawl : coude haut</h3><ul><li><a href="https://www.youtube.com/results?search_query=technique+crawl+coude+haut+tuto" target="_blank" rel="noopener">Tutos YouTube ↗</a></li></ul></div><div class="goal"><h3><i class="c2"></i>Plaquettes</h3><ul><li><a href="https://www.youtube.com/results?search_query=plaquettes+natation+comment+utiliser+d%C3%A9butant" target="_blank" rel="noopener">Tutos YouTube ↗</a></li></ul></div><div class="goal"><h3><i class="c4"></i>Battements</h3><ul><li><a href="https://www.youtube.com/results?search_query=battements+crawl+technique+planche" target="_blank" rel="noopener">Tutos YouTube ↗</a></li></ul></div><div class="goal"><h3><i class="c7"></i>Nager avec un pull-buoy</h3><ul><li><a href="https://www.youtube.com/results?search_query=pull+buoy+natation+gainage+utilisation" target="_blank" rel="noopener">Tutos YouTube ↗</a></li></ul></div><div class="goal"><h3><i class="c5"></i>Dos crawlé</h3><ul><li><a href="https://www.youtube.com/results?search_query=dos+craw%C3%A9+technique+tuto+natation" target="_blank" rel="noopener">Tutos YouTube ↗</a></li></ul></div></div></section></main><script>
-(function(){
-var KEY='nat-done',done={};try{done=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}}
-var yt='https://www.youtube.com/results?search_query=';
-document.querySelectorAll('.card h3').forEach(function(h){var t=h.textContent.trim();
- var a=document.createElement('a');a.href=yt+encodeURIComponent('natation '+t+' technique');
- a.target='_blank';a.rel='noopener';a.textContent=t;h.textContent='';h.appendChild(a)});
-var sess=document.getElementById('s1');
-var secs=[].slice.call(sess.children).filter(function(e){return e.tagName==='SECTION'});
-secs.forEach(function(sec,si){
- var h=sec.querySelector('.sh');if(!h)return;
- var rest=[].slice.call(sec.children).filter(function(e){return e!==h});
- var body=document.createElement('div');body.className='abody';
- rest.forEach(function(e){body.appendChild(e)});sec.appendChild(body);
- sec.classList.add('acc');h.setAttribute('role','button');h.tabIndex=0;
- var cards=[].slice.call(sec.querySelectorAll('.card'));
- var prog=document.createElement('span');prog.className='prog';h.appendChild(prog);
- function upd(){var n=cards.filter(function(c){return c.classList.contains('done')}).length;
-  prog.textContent=n+'/'+cards.length;prog.classList.toggle('full',n===cards.length)}
- cards.forEach(function(c,ci){var id=si+'-'+ci;
-  var b=document.createElement('button');b.className='chk';b.type='button';b.textContent='✓';
-  b.setAttribute('aria-label','Marquer comme fait');c.appendChild(b);
-  function set(v){c.classList.toggle('done',v);b.setAttribute('aria-pressed',String(v))}
-  set(!!done[id]);
-  b.addEventListener('click',function(e){e.stopPropagation();var v=!c.classList.contains('done');
-   set(v);if(v)done[id]=1;else delete done[id];save();upd()})});
- upd();sec._upd=upd;
- function setOpen(o){sec.classList.toggle('open',o);h.setAttribute('aria-expanded',String(o))}
- setOpen(si===0);sec._set=setOpen;
- function tog(){var o=!sec.classList.contains('open');
-  if(o)secs.forEach(function(x){if(x!==sec)x._set&&x._set(false)});
-  setOpen(o);if(o)window.scrollTo({top:h.getBoundingClientRect().top+window.scrollY-12})}
- h.addEventListener('click',tog);
- h.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tog()}});
-});
-function goto(i){var sec=secs[i];if(!sec)return;var h=sec.querySelector('.sh');
- if(!sec.classList.contains('open'))h.click();else window.scrollTo({top:h.getBoundingClientRect().top+window.scrollY-12})}
-var bar=sess.querySelector('.bar');
-[].slice.call(bar.querySelectorAll('.seg')).forEach(function(seg,i){
- var b=document.createElement('button');b.type='button';b.className=seg.className;
- b.setAttribute('style',seg.getAttribute('style'));b.innerHTML=seg.innerHTML;
- var sp=b.querySelector('span');if(sp)sp.textContent=sp.textContent.replace(' min',"'");
- var lab=secs[i]&&secs[i].querySelector('h2');b.setAttribute('aria-label','Aller à '+(lab?lab.textContent:''));
- b.addEventListener('click',function(){goto(i)});seg.replaceWith(b)});
-[].slice.call(sess.querySelector('.legend').children).forEach(function(li,i){
- var b=document.createElement('button');b.type='button';b.innerHTML=li.innerHTML;
- b.addEventListener('click',function(){goto(i)});li.textContent='';li.appendChild(b)});
-var tools=document.createElement('div');tools.className='tools';
-var all=document.createElement('button');all.type='button';all.textContent='Tout déplier';
-var rst=document.createElement('button');rst.type='button';rst.textContent='Tout décocher';
-tools.appendChild(all);tools.appendChild(rst);sess.insertBefore(tools,secs[0]);
-var open=false;
-all.addEventListener('click',function(){open=!open;secs.forEach(function(s){s._set(open)});
- all.textContent=open?'Tout replier':'Tout déplier'});
-rst.addEventListener('click',function(){sess.querySelectorAll('.card.done').forEach(function(c){
-  c.classList.remove('done');var b=c.querySelector('.chk');b&&b.setAttribute('aria-pressed','false')});
- done={};save();secs.forEach(function(s){s._upd&&s._upd()})});
-})();
-</script></body></html>
+:root{color-scheme:light;--bg:#ECEFF5;--surface:#fff;--fg:#171E30;--muted:#5A6378;--line:#D5DAE6;--c2:#2C55D6;
+ --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1220;--surface:#171D2E;--fg:#E7EBF4;--muted:#9AA3B9;--line:#2A3247;--c2:#7393F5;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1220;--surface:#171D2E;--fg:#E7EBF4;--muted:#9AA3B9;--line:#2A3247;--c2:#7393F5;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;
+ padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{max-width:620px;margin:0 auto}
+a.back{display:inline-block;color:var(--c2);font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-bottom:14px}
+h1{font-family:var(--display);font-size:clamp(1.3rem,6vw,1.9rem);font-weight:800;margin:0;line-height:1.1}
+.sub{margin:4px 0 16px;color:var(--muted);font-size:.95rem}
+ol{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+li{display:flex;align-items:baseline;gap:12px;padding:11px 14px;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li b{font-family:var(--display);font-size:1.25rem;min-width:1.9em;text-align:right;font-variant-numeric:tabular-nums}
+li span{flex:1;min-width:0}
+li small{display:block;color:var(--muted);font-size:.82rem}
+.foot{margin:16px 0 0;color:var(--muted);font-size:.9rem}
+.foot b{color:var(--fg)}
+</style></head><body>
+<main>
+<a class="back" href="../#seances">&larr; Séances</a>
+<h1>Natation 1 500 m</h1>
+<p class="sub">60 longueurs de 25 m · repos 20 s au mur</p>
+<ol>
+<li><b>8</b><span>crawl souple<small>sans s'arrêter, respiration 3 temps</small></span></li>
+<li><b>2</b><span>rattrapé<small>une main attend l'autre devant</small></span></li>
+<li><b>2</b><span>poings fermés</span></li>
+<li><b>4</b><span>plaquettes, lent<small>compte tes coups de bras</small></span></li>
+<li><b>12</b><span>plaquettes + pull-buoy, fort<small>coude haut, pousse jusqu'à la cuisse</small></span></li>
+<li><b>8</b><span>planche<small>1 longueur vite, 1 souple</small></span></li>
+<li><b>10</b><span>sprint<small>à fond, repos 30 s</small></span></li>
+<li><b>8</b><span>pull-buoy seul<small>ventre serré</small></span></li>
+<li><b>6</b><span>dos souple<small>retour au calme</small></span></li>
+</ol>
+<p class="foot">À retenir : <b>8-2-2</b> échauffement, <b>4-12</b> plaquettes, <b>8</b> planche, <b>10</b> sprints, <b>8</b> pull-buoy, <b>6</b> dos.</p>
+</main>
+</body></html>
