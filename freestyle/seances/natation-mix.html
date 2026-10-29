@@ -30,6 +30,15 @@ li small{display:block;color:var(--muted);font-size:.82rem}
 
 li span>a.yt{color:inherit;text-decoration:underline;text-decoration-color:var(--c2);text-decoration-thickness:2px;text-underline-offset:3px}
 li span>a.yt::after{content:" \2197";font-size:.72em;color:var(--c2);text-decoration:none;display:inline-block}
+
+.bar2{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 0}
+.bar2 button{font:inherit;font-weight:700;border-radius:999px;padding:11px 18px;cursor:pointer;border:0}
+#done{background:var(--c2);color:#fff}
+#hist{background:none;color:var(--c2);text-decoration:underline;text-underline-offset:3px;padding:11px 2px}
+.bar2 input{font:inherit;font-size:.9rem;width:5.4em;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg)}
+#msg{margin:10px 0 0;font-size:.9rem;font-weight:700}
+#histBox{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:.9rem}
+#histBox p{margin:3px 0;color:var(--muted)}
 </style></head><body>
 <main>
 <a class="back" href="natation.html">&larr; Natation</a>
@@ -47,6 +56,9 @@ li span>a.yt::after{content:" \2197";font-size:.72em;color:var(--c2);text-decora
 <li><b>6</b><span>dos souple<small>retour au calme</small></span></li>
 </ol>
 <p class="foot">À retenir : <b>8-2-2</b> échauffement, <b>4-12</b> plaquettes, <b>8</b> planche, <b>10</b> sprints, <b>8</b> pull-buoy, <b>6</b> dos.</p>
+<div class="bar2"><button id="done" type="button">J'ai fait cette séance</button><input id="dur" type="text" inputmode="numeric" placeholder="min" aria-label="durée en minutes"><button id="hist" type="button">Historique</button></div>
+<p id="msg" hidden></p>
+<div id="histBox" hidden></div>
 <p><button class="wa" type="button">Partager sur WhatsApp</button></p>
 </main>
 <script>
@@ -75,5 +87,41 @@ document.querySelector('.wa').addEventListener('click',function(){
  lines.push(location.href.split('#')[0]);
  window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener');
 });
+</script>
+<script>
+(function(){
+var SB='https://osqyczwawbbwjwaubtvc.supabase.co/rest/v1';
+var K='sb_publishable_Z4ykq9R8uYhtrAks301TPA_ujR1K2VB';
+var H={apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'};
+var SEANCE='natation-mix';
+var me='';try{me=localStorage.getItem('ft_prenom')||''}catch(e){}
+function msg(t,ok){var m=document.getElementById('msg');m.hidden=false;m.textContent=t;m.style.color=ok?'#1E9A78':'#D9474B'}
+function api(p,o){o=o||{};o.headers=H;return fetch(SB+p,o).then(function(r){
+ if(!r.ok)return r.text().then(function(t){throw new Error(t||r.status)});
+ return r.status===204?null:r.json().catch(function(){return null})})}
+function ask(){if(me)return true;var n=prompt('Ton prénom ?');if(!n)return false;
+ me=n.trim();try{localStorage.setItem('ft_prenom',me)}catch(e){}return true}
+document.getElementById('done').addEventListener('click',function(){
+ if(!ask())return;
+ var d=new Date(),dt=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ var dur=document.getElementById('dur').value.trim();
+ msg('Enregistrement…',true);
+ api('/ft_journal',{method:'POST',body:JSON.stringify([{prenom:me,seance:SEANCE,date:dt,exercice:'séance faite',charge:null,reps:dur||null}])})
+  .then(function(){msg('Séance validée. Bravo !',true)})
+  .catch(function(){msg('Échec de l\'enregistrement. Réessaie.',false)});
+});
+document.getElementById('hist').addEventListener('click',function(){
+ var box=document.getElementById('histBox');
+ if(!box.hidden){box.hidden=true;return}
+ if(!ask())return;
+ box.hidden=false;box.textContent='Chargement…';
+ api('/ft_journal?seance=eq.'+SEANCE+'&prenom=eq.'+encodeURIComponent(me)+'&order=date.desc&limit=100')
+  .then(function(d){
+   if(!d||!d.length){box.textContent='Aucune séance enregistrée pour le moment.';return}
+   box.innerHTML='<p><b>'+d.length+' séance'+(d.length>1?'s':'')+'</b></p>'+d.map(function(r){
+    return '<p>'+r.date.slice(8,10)+'/'+r.date.slice(5,7)+'/'+r.date.slice(0,4)+(r.reps?' — '+r.reps+' min':'')+'</p>'}).join('');
+  }).catch(function(){box.textContent='Impossible de charger l\'historique.'});
+});
+})();
 </script>
 </body></html>
