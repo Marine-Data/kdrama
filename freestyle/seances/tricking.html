@@ -123,6 +123,18 @@ h1{font-size:clamp(1.8rem,6vw,2.8rem)}
 .card.done .fig,.card.done .txt{opacity:.5}
 .acc>.sh{flex-wrap:nowrap}.acc>.sh h2{flex:1;min-width:0}.acc>.sh .prog{flex:none}
 .acc>.sh{gap:8px}.acc>.sh h2{font-size:1.2rem}.acc>.sh{padding-right:26px}
+
+.acc>.sh{display:grid;grid-template-columns:auto auto 1fr auto;grid-template-areas:"t t t p" "m d . p";align-items:center;gap:4px 10px;background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--k);border-radius:12px;padding:12px 44px 12px 14px;min-height:60px}
+.acc>.sh h2{grid-area:t;font-size:1.25rem;flex:none}
+.acc>.sh .tc{grid-area:m;background:none;color:var(--muted);padding:0;font-size:.9rem;letter-spacing:0}
+.acc>.sh .dur{grid-area:d;display:inline;font-size:.9rem;color:var(--muted)}
+.acc>.sh .dur::before{content:"·";margin-right:10px}
+.acc>.sh .prog{grid-area:p;align-self:center;margin:0}
+.acc>.sh::after{right:16px}
+.acc.open>.sh{border-bottom-left-radius:12px}
+.acc>.sh:has(.c1){--k:var(--c1)}.acc>.sh:has(.c2){--k:var(--c2)}.acc>.sh:has(.c3){--k:var(--c3)}.acc>.sh:has(.c4){--k:var(--c4)}.acc>.sh:has(.c5){--k:var(--c5)}.acc>.sh:has(.c6){--k:var(--c6)}.acc>.sh:has(.c7){--k:var(--c7)}
+.acc>.intro{display:none}
+.acc .abody>.intro{margin-top:2px}
 </style>
 <script>
 document.addEventListener('click',function(e){var b=e.target.closest('.tabs button');if(!b)return;var t=b.dataset.t;
