@@ -77,6 +77,18 @@ details.past .card{opacity:.6;box-shadow:none}
 .map{text-decoration:none;margin-left:4px}
 .tbd{font:inherit;font-weight:700;font-size:.85rem;border:2px dashed var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:3px 10px;cursor:pointer;min-height:32px}
 .tbd.lieu{font-weight:600;margin-top:4px}
+.mtabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px}
+.mtabs button{font:inherit;font-weight:700;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:11px 8px;cursor:pointer;min-height:46px}
+.mtabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+.vh{font-size:1.3rem;font-weight:800;margin:6px 0 2px}
+.disc{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px;background:var(--card);border:2px solid var(--line);border-radius:18px;box-shadow:4px 4px 0 var(--line);color:inherit;text-decoration:none}
+.disc .emo{font-size:1.8rem}
+.disc .dtxt{display:flex;flex-direction:column;flex:1;min-width:0}
+.disc .dtxt b{font-family:'Bricolage Grotesque',Inter,sans-serif;font-size:1.15rem}
+.disc .dtxt small{color:var(--muted);font-size:.86rem}
+.disc .go{font-size:1.4rem;font-weight:800}
+.disc.soon{opacity:.55;box-shadow:none;border-style:dashed}
+a.disc:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
 .row2{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .row2 .btn{flex:1}
 .row2 .btn.full{flex-basis:100%}
@@ -133,9 +145,30 @@ textarea{resize:vertical;min-height:70px}
     <div class="who" id="who"></div>
   </header>
 
-  <div id="appbar"></div>
-  <button class="btn primary big" id="addBtn">+ Proposer une activité</button>
-  <div id="list" aria-live="polite"></div>
+  <nav class="mtabs" role="tablist" aria-label="Sections">
+    <button role="tab" id="tabPlanning" data-view="planning" aria-selected="true">📅 Planning</button>
+    <button role="tab" id="tabSeances" data-view="seances" aria-selected="false">💪 Séances</button>
+  </nav>
+
+  <div id="viewPlanning" role="tabpanel" aria-labelledby="tabPlanning">
+    <div id="appbar"></div>
+    <button class="btn primary big" id="addBtn">+ Proposer une activité</button>
+    <div id="list" aria-live="polite"></div>
+  </div>
+
+  <div id="viewSeances" role="tabpanel" aria-labelledby="tabSeances" hidden>
+    <h2 class="vh">Séances types</h2>
+    <p class="meta">Des exemples de séances pour s’entraîner ensemble ou chacun de son côté.</p>
+    <a class="disc" href="seances/tricking.html">
+      <span class="emo" aria-hidden="true">🤸</span>
+      <span class="dtxt"><b>Tricking</b><small>2 séances de 1h15 (flips, rotations), avec fiches illustrées et tutos</small></span>
+      <span class="go" aria-hidden="true">→</span>
+    </a>
+    <div class="disc soon"><span class="emo" aria-hidden="true">🏃</span><span class="dtxt"><b>Running</b><small>Bientôt</small></span></div>
+    <div class="disc soon"><span class="emo" aria-hidden="true">🏊</span><span class="dtxt"><b>Natation</b><small>Bientôt</small></span></div>
+    <div class="disc soon"><span class="emo" aria-hidden="true">🧘</span><span class="dtxt"><b>Gym suédoise</b><small>Bientôt</small></span></div>
+    <div class="disc soon"><span class="emo" aria-hidden="true">💪</span><span class="dtxt"><b>Street workout</b><small>Bientôt</small></span></div>
+  </div>
 </main>
 
 <!-- Prénom -->
@@ -672,6 +705,17 @@ $('addForm').onsubmit = async e => {
   }
   btn.disabled = false;
 };
+
+/* Onglets Planning / Séances */
+function setView(v) {
+  const seances = v === 'seances';
+  $('viewPlanning').hidden = seances; $('viewSeances').hidden = !seances;
+  $('tabPlanning').setAttribute('aria-selected', String(!seances));
+  $('tabSeances').setAttribute('aria-selected', String(seances));
+  try { history.replaceState(null, '', seances ? '#seances' : location.pathname + location.search); } catch (e) {}
+}
+document.querySelector('.mtabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
+if (location.hash === '#seances') setView('seances');
 
 /* Appli installable + notifications push */
 const VAPID_PUBLIC = 'BAO4cgcv8VL1tm6fKUjmq3g2saho_h5lMdj6tvmatvBF7WAZctesCVaUNZGfpOI9258QeyW3PhFE-EOWPyyLooI';
