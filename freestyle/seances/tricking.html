@@ -1,4 +1,11 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Séances de tricking – Freestyle Tricks</title><meta name="theme-color" content="#ECEFF5"><link rel="icon" type="image/png" href="../icon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Séances de tricking – Freestyle Tricks</title><meta name="theme-color" content="#ECEFF5"><link rel="icon" type="image/png" href="../icon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.acc>.sh{cursor:pointer;position:relative;padding-right:30px;-webkit-tap-highlight-color:transparent}
+.acc>.sh::after{content:"";position:absolute;right:6px;top:50%;width:9px;height:9px;border-right:2.5px solid var(--fg);border-bottom:2.5px solid var(--fg);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.acc.open>.sh::after{transform:translateY(-30%) rotate(-135deg)}
+.acc>.sh:focus-visible{outline:2px solid var(--c2);outline-offset:4px;border-radius:6px}
+.acc .abody{display:flex;flex-direction:column;gap:inherit}
+.acc:not(.open) .abody{display:none}
+.sess{gap:18px}
+</style></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Layout : bande chronologique 75 min en tête, puis un bloc par phase avec grille de fiches illustrées */
@@ -115,4 +122,27 @@ if(t==='b')document.getElementById('tab-b').click(),window.scrollTo(0,0);});
   </div>
 </main>
 
+<script>
+(function(){
+function init(){
+document.querySelectorAll('.sess').forEach(function(sess){
+var secs=[].slice.call(sess.children).filter(function(e){return e.tagName==='SECTION'});
+secs.forEach(function(sec,i){
+var h=sec.querySelector('.sh');if(!h)return;
+var rest=[].slice.call(sec.children).filter(function(e){return e!==h});
+if(!rest.length)return;
+var body=document.createElement('div');body.className='abody';rest.forEach(function(e){body.appendChild(e)});sec.appendChild(body);
+sec.classList.add('acc');h.setAttribute('role','button');h.tabIndex=0;
+function set(open){sec.classList.toggle('open',open);h.setAttribute('aria-expanded',String(open))}
+set(i===0);
+function tog(){var o=!sec.classList.contains('open');
+if(o)secs.forEach(function(x){if(x!==sec&&x.classList.contains('acc')){x.classList.remove('open');var xh=x.querySelector('.sh');xh&&xh.setAttribute('aria-expanded','false')}});
+set(o);if(o){var t=h.getBoundingClientRect().top+window.scrollY-(document.querySelector('.tabs').offsetHeight+12);window.scrollTo({top:t})}}
+h.addEventListener('click',tog);
+h.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tog()}});
+});
+});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>
