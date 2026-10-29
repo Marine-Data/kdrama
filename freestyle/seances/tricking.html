@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Séances de tricking – Freestyle Tricks</title><meta name="theme-color" content="#ECEFF5"><link rel="icon" type="image/png" href="../icon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Séances de tricking – Freestyle Tricks</title><meta name="theme-color" content="#ECEFF5"><link rel="icon" type="image/png" href="../icon-192.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.wa{display:inline-flex;align-items:center;gap:8px;margin:4px 0 0;font:inherit;font-weight:700;color:#fff;background:#25D366;border:0;border-radius:999px;padding:11px 18px;cursor:pointer}
+</style></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Layout : bande chronologique 75 min en tête, puis un bloc par phase avec grille de fiches illustrées */
@@ -165,6 +166,7 @@ if(t==='b')document.getElementById('tab-b').click(),window.scrollTo(0,0);});
     <div class="note"><h3>Fréquence</h3><p>2 à 3 séances par semaine. Les étirements peuvent se faire un jour de plus, seuls.</p></div>
     <div class="note"><h3>Alternance</h3><p>A puis B puis A… Si tu ne fais qu'une séance par semaine, change de séance chaque semaine.</p></div>
   </div>
+<p><button class="wa" type="button">Partager sur WhatsApp</button></p>
 </main>
 
 <script>
@@ -241,5 +243,19 @@ document.querySelectorAll('.sess').forEach(function(sess){
  rst.addEventListener('click',function(){sess.querySelectorAll('.card.done').forEach(function(c){c.classList.remove('done');var b=c.querySelector('.chk');b&&b.setAttribute('aria-pressed','false')});Object.keys(done).forEach(function(k){if(k.indexOf(sess.id+'-')===0)delete done[k]});save();secs.forEach(function(sec){sec._upd&&sec._upd()})});
 });
 })();
+</script>
+<script>
+document.querySelector('.wa').addEventListener('click',function(){
+ var sel=document.querySelector('.tabs button[aria-selected="true"]');
+ var sb=sel?sel.querySelector('b'):null;var ss=sel?sel.querySelector('span'):null;
+ var t=document.querySelector('h1').textContent.trim()+(sb?' — '+sb.textContent.trim()+(ss?' ('+ss.textContent.trim()+')':''):'');
+ var l=[t];
+ document.querySelectorAll('.sess:not([hidden]) .acc').forEach(function(sec){
+  var h=sec.querySelector('h2'),d=sec.querySelector('.dur');
+  l.push('• '+h.textContent.trim()+(d?' ('+d.textContent.trim()+')':''));
+ });
+ l.push(location.href.split('#')[0]);
+ window.open('https://wa.me/?text='+encodeURIComponent(l.join('\n')),'_blank','noopener');
+});
 </script>
 </body></html>
