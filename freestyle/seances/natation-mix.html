@@ -27,6 +27,9 @@ li small{display:block;color:var(--muted);font-size:.82rem}
 
 .wa{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font:inherit;font-weight:700;color:#fff;background:#25D366;border:0;border-radius:999px;padding:11px 18px;cursor:pointer}
 .wa:active{transform:translateY(1px)}
+
+li span>a.yt{color:inherit;text-decoration:underline;text-decoration-color:var(--c2);text-decoration-thickness:2px;text-underline-offset:3px}
+li span>a.yt::after{content:" \2197";font-size:.72em;color:var(--c2);text-decoration:none;display:inline-block}
 </style></head><body>
 <main>
 <a class="back" href="natation.html">&larr; Natation</a>
@@ -46,6 +49,17 @@ li small{display:block;color:var(--muted);font-size:.82rem}
 <p class="foot">À retenir : <b>8-2-2</b> échauffement, <b>4-12</b> plaquettes, <b>8</b> planche, <b>10</b> sprints, <b>8</b> pull-buoy, <b>6</b> dos.</p>
 <p><button class="wa" type="button">Partager sur WhatsApp</button></p>
 </main>
+<script>
+(function(){var M={"crawl souple": "technique crawl respiration 3 temps", "rattrapé": "éducatif rattrapé crawl natation", "poings fermés": "éducatif poings fermés crawl natation", "plaquettes, lent": "plaquettes natation utilisation débutant", "plaquettes + pull-buoy, fort": "pull buoy plaquettes natation technique", "planche": "battements crawl planche technique", "sprint": "sprint crawl technique natation", "pull-buoy seul": "pull buoy natation gainage", "dos souple": "dos crawlé technique natation", "nage libre": "technique crawl respiration 3 temps", "nage complète, pull-buoy, pull + plaquettes, plaquettes": "plaquettes pull buoy natation utilisation", "nage complète, planche, pull-buoy, plaquettes": "plaquettes pull buoy natation utilisation", "pull + plaquettes": "pull buoy plaquettes natation technique", "pull": "pull buoy natation gainage", "nage complète": "technique crawl amplitude appuis"};
+document.querySelectorAll('ol li span').forEach(function(sp){
+ var n=sp.firstChild; if(!n||n.nodeType!==3)return;
+ var t=n.textContent.trim(); var q=M[t]; if(!q)return;
+ var a=document.createElement('a'); a.className='yt'; a.target='_blank'; a.rel='noopener';
+ a.href='https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+ a.textContent=t; sp.replaceChild(a,n);
+});})();
+</script>
+
 <script>
 document.querySelector('.wa').addEventListener('click',function(){
  var t=document.querySelector('h1').textContent.trim();
