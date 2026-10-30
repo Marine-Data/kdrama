@@ -1,128 +1,16 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Natation 1 500 m (Adrien) – Freestyle Tricks</title>
-<meta name="theme-color" content="#ECEFF5">
-<link rel="icon" type="image/png" href="../icon-192.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
-<style>
-:root{color-scheme:light;--bg:#ECEFF5;--surface:#fff;--fg:#171E30;--muted:#5A6378;--line:#D5DAE6;--c2:#2C55D6;
- --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1220;--surface:#171D2E;--fg:#E7EBF4;--muted:#9AA3B9;--line:#2A3247;--c2:#7393F5;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0E1220;--surface:#171D2E;--fg:#E7EBF4;--muted:#9AA3B9;--line:#2A3247;--c2:#7393F5;color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;
- padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
-main{max-width:620px;margin:0 auto}
-a.back{display:inline-block;color:var(--c2);font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-bottom:14px}
-h1{font-family:var(--display);font-size:clamp(1.3rem,6vw,1.9rem);font-weight:800;margin:0;line-height:1.1}
-.sub{margin:4px 0 16px;color:var(--muted);font-size:.95rem}
-ol{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-li{display:flex;align-items:baseline;gap:12px;padding:11px 14px;border-top:1px solid var(--line)}
-li:first-child{border-top:0}
-li b{font-family:var(--display);font-size:1.15rem;min-width:3.4em;text-align:right;font-variant-numeric:tabular-nums}
-li span{flex:1;min-width:0}
-li small{display:block;color:var(--muted);font-size:.82rem}
-.foot{margin:16px 0 0;color:var(--muted);font-size:.9rem}
-.foot b{color:var(--fg)}
-
-.wa{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font:inherit;font-weight:700;color:#fff;background:#25D366;border:0;border-radius:999px;padding:11px 18px;cursor:pointer}
-.wa:active{transform:translateY(1px)}
-li b{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
-li b em{font-family:var(--body);font-style:normal;font-size:.72rem;font-weight:400;color:var(--muted);letter-spacing:.01em}
-
-li span>a.yt{color:inherit;text-decoration:underline;text-decoration-color:var(--c2);text-decoration-thickness:2px;text-underline-offset:3px}
-li span>a.yt::after{content:" \2197";font-size:.72em;color:var(--c2);text-decoration:none;display:inline-block}
-
-.bar2{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 0}
-.bar2 button{font:inherit;font-weight:700;border-radius:999px;padding:11px 18px;cursor:pointer;border:0}
-#done{background:var(--c2);color:#fff}
-#hist{background:none;color:var(--c2);text-decoration:underline;text-underline-offset:3px;padding:11px 2px}
-.bar2 input{font:inherit;font-size:.9rem;width:5.4em;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg)}
-#msg{margin:10px 0 0;font-size:.9rem;font-weight:700}
-#histBox{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:.9rem}
-#histBox p{margin:3px 0;color:var(--muted)}
-</style></head><body>
-<main>
-<a class="back" href="natation.html">&larr; Natation</a>
-<h1>Natation 1 500 m</h1>
-<p class="sub">Séance d'Adrien · 25 m = 1 longueur, donc 100 m = 4 longueurs</p>
-<ol>
-<li><b>300<em>12 long.</em></b><span>nage libre<small>échauffement</small></span></li>
-<li><b>4×100<em>4×4 long.</em></b><span>nage complète, pull-buoy, pull + plaquettes, plaquettes<small>dans cet ordre</small></span></li>
-<li><b>100<em>4 long.</em></b><span>récup au choix</span></li>
-<li><b>200<em>8 long.</em></b><span>pull + plaquettes<small>chercher les appuis, amplitude</small></span></li>
-<li><b>200<em>8 long.</em></b><span>pull<small>garder l'amplitude et les appuis</small></span></li>
-<li><b>200<em>8 long.</em></b><span>nage complète<small>idem</small></span></li>
-<li><b>100<em>4 long.</em></b><span>récup au choix</span></li>
-</ol>
-<p class="foot"><b>Amplitude :</b> aller chercher loin devant, et sous l'eau finir le mouvement jusqu'à avoir le bras tendu le long du corps.</p>
-<p class="foot">Si l'épaule tire, enlève les plaquettes sur le dernier 200.</p>
-<div class="bar2"><button id="done" type="button">J'ai fait cette séance</button><input id="dur" type="text" inputmode="numeric" placeholder="min" aria-label="durée en minutes"><button id="hist" type="button">Historique</button></div>
-<p id="msg" hidden></p>
-<div id="histBox" hidden></div>
-<p><button class="wa" type="button">Partager sur WhatsApp</button></p>
-</main>
-<script>
-(function(){var M={"crawl souple": "technique crawl respiration 3 temps", "rattrapé": "éducatif rattrapé crawl natation", "poings fermés": "éducatif poings fermés crawl natation", "plaquettes, lent": "plaquettes natation utilisation débutant", "plaquettes + pull-buoy, fort": "pull buoy plaquettes natation technique", "planche": "battements crawl planche technique", "sprint": "sprint crawl technique natation", "pull-buoy seul": "pull buoy natation gainage", "dos souple": "dos crawlé technique natation", "nage libre": "technique crawl respiration 3 temps", "nage complète, pull-buoy, pull + plaquettes, plaquettes": "plaquettes pull buoy natation utilisation", "nage complète, planche, pull-buoy, plaquettes": "plaquettes pull buoy natation utilisation", "pull + plaquettes": "pull buoy plaquettes natation technique", "pull": "pull buoy natation gainage", "nage complète": "technique crawl amplitude appuis"};
-document.querySelectorAll('ol li span').forEach(function(sp){
- var n=sp.firstChild; if(!n||n.nodeType!==3)return;
- var t=n.textContent.trim(); var q=M[t]; if(!q)return;
- var a=document.createElement('a'); a.className='yt'; a.target='_blank'; a.rel='noopener';
- a.href='https://www.youtube.com/results?search_query='+encodeURIComponent(q);
- a.textContent=t; sp.replaceChild(a,n);
-});})();
-</script>
-
-<script>
-document.querySelector('.wa').addEventListener('click',function(){
- var t=document.querySelector('h1').textContent.trim();
- var sub=document.querySelector('.sub');
- var lines=[t+(sub?' — '+sub.textContent.trim():'')];
- document.querySelectorAll('ol li').forEach(function(li){
-  var bb=li.querySelector('b').cloneNode(true);var be=bb.querySelector('em');if(be)be.remove();var n=bb.textContent.trim();
-  var s=li.querySelector('span').cloneNode(true);
-  var sm=s.querySelector('small'); var d=sm?sm.textContent.trim():'';
-  if(sm)sm.remove();
-  lines.push(n+' '+s.textContent.trim()+(d?' ('+d+')':''));
- });
- lines.push(location.href.split('#')[0]);
- window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener');
-});
-</script>
-<script>
-(function(){
-var SB='https://osqyczwawbbwjwaubtvc.supabase.co/rest/v1';
-var K='sb_publishable_Z4ykq9R8uYhtrAks301TPA_ujR1K2VB';
-var H={apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json'};
-var SEANCE='natation-adrien';
-var me='';try{me=localStorage.getItem('ft_prenom')||''}catch(e){}
-function msg(t,ok){var m=document.getElementById('msg');m.hidden=false;m.textContent=t;m.style.color=ok?'#1E9A78':'#D9474B'}
-function api(p,o){o=o||{};o.headers=H;return fetch(SB+p,o).then(function(r){
- if(!r.ok)return r.text().then(function(t){throw new Error(t||r.status)});
- return r.status===204?null:r.json().catch(function(){return null})})}
-function ask(){if(me)return true;var n=prompt('Ton prénom ?');if(!n)return false;
- me=n.trim();try{localStorage.setItem('ft_prenom',me)}catch(e){}return true}
-document.getElementById('done').addEventListener('click',function(){
- if(!ask())return;
- var d=new Date(),dt=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
- var dur=document.getElementById('dur').value.trim();
- msg('Enregistrement…',true);
- api('/ft_journal',{method:'POST',body:JSON.stringify([{prenom:me,seance:SEANCE,date:dt,exercice:'séance faite',charge:null,reps:dur||null}])})
-  .then(function(){msg('Séance validée. Bravo !',true)})
-  .catch(function(){msg('Échec de l\'enregistrement. Réessaie.',false)});
-});
-document.getElementById('hist').addEventListener('click',function(){
- var box=document.getElementById('histBox');
- if(!box.hidden){box.hidden=true;return}
- if(!ask())return;
- box.hidden=false;box.textContent='Chargement…';
- api('/ft_journal?seance=eq.'+SEANCE+'&prenom=eq.'+encodeURIComponent(me)+'&order=date.desc&limit=100')
-  .then(function(d){
-   if(!d||!d.length){box.textContent='Aucune séance enregistrée pour le moment.';return}
-   box.innerHTML='<p><b>'+d.length+' séance'+(d.length>1?'s':'')+'</b></p>'+d.map(function(r){
-    return '<p>'+r.date.slice(8,10)+'/'+r.date.slice(5,7)+'/'+r.date.slice(0,4)+(r.reps?' — '+r.reps+' min':'')+'</p>'}).join('');
-  }).catch(function(){box.textContent='Impossible de charger l\'historique.'});
-});
-})();
-</script>
-</body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freestyle Tricks a déménagé</title>
+<meta http-equiv="refresh" content="0; url=https://marine-data.github.io/training/seances/natation-adrien.html">
+<link rel="canonical" href="https://marine-data.github.io/training/seances/natation-adrien.html">
+<script>location.replace('https://marine-data.github.io/training/seances/natation-adrien.html' + (location.hash || ''));</script>
+<style>body{font-family:system-ui,sans-serif;background:#F4F2EC;color:#141414;padding:40px 16px;text-align:center;line-height:1.5}a{color:#2457E0;font-weight:700}</style>
+</head>
+<body>
+<p>Le planning Freestyle Tricks a déménagé.</p>
+<p><a href="https://marine-data.github.io/training/seances/natation-adrien.html">Ouvrir la nouvelle adresse</a></p>
+</body>
+</html>
